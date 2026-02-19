@@ -1,0 +1,221 @@
+import { z } from "zod";
+
+// ─── City Schemas ─────────────────────────────────────────────────────────────
+
+export const citySchema = z.object({
+    name: z.string().min(1, "City name is required"),
+    state: z.string().min(1, "State is required"),
+    country: z.string().default("India"),
+    isActive: z.boolean().default(true),
+});
+
+export type CityFormData = z.infer<typeof citySchema>;
+
+// ─── Holding Type Schemas ─────────────────────────────────────────────────────
+
+export const holdingTypeSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    description: z.string().optional(),
+    isActive: z.boolean().default(true),
+});
+
+export type HoldingTypeFormData = z.infer<typeof holdingTypeSchema>;
+
+// ─── HSN Code Schemas ─────────────────────────────────────────────────────────
+
+export const hsnCodeSchema = z.object({
+    code: z.string().min(1, "HSN code is required"),
+    description: z.string().min(1, "Description is required"),
+    gstRate: z.coerce.number().min(0).max(100),
+    isActive: z.boolean().default(true),
+});
+
+export type HsnCodeFormData = z.infer<typeof hsnCodeSchema>;
+
+// ─── Holding Schemas ──────────────────────────────────────────────────────────
+
+export const holdingSchema = z.object({
+    code: z.string().min(1, "Holding code is required"),
+    name: z.string().min(1, "Name is required"),
+    address: z.string().min(1, "Address is required"),
+    latitude: z.coerce.number().optional(),
+    longitude: z.coerce.number().optional(),
+    width: z.coerce.number().positive("Width must be positive"),
+    height: z.coerce.number().positive("Height must be positive"),
+    totalArea: z.coerce.number().positive("Area must be positive"),
+    illumination: z.enum(["LIT", "NON_LIT", "DIGITAL"]),
+    facing: z.string().optional(),
+    landmark: z.string().optional(),
+    status: z.enum(["AVAILABLE", "BOOKED", "UNDER_MAINTENANCE", "INACTIVE"]).default("AVAILABLE"),
+    maintenanceCycle: z.coerce.number().int().positive().default(90),
+    notes: z.string().optional(),
+    cityId: z.string().min(1, "City is required"),
+    holdingTypeId: z.string().min(1, "Holding type is required"),
+    hsnCodeId: z.string().min(1, "HSN code is required"),
+});
+
+export type HoldingFormData = z.infer<typeof holdingSchema>;
+
+// ─── Ownership Contract Schemas ───────────────────────────────────────────────
+
+export const ownershipContractSchema = z.object({
+    contractNumber: z.string().min(1, "Contract number is required"),
+    ownerName: z.string().min(1, "Owner name is required"),
+    ownerType: z.enum(["GOVERNMENT", "MUNICIPAL", "VILLAGE_PANCHAYAT", "PRIVATE"]),
+    ownerContact: z.string().optional(),
+    ownerEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+    ownerAddress: z.string().optional(),
+    rentAmount: z.coerce.number().positive("Rent must be positive"),
+    rentCycle: z.enum(["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"]).default("MONTHLY"),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    securityDeposit: z.coerce.number().optional(),
+    status: z.enum(["ACTIVE", "EXPIRED", "TERMINATED", "PENDING"]).default("ACTIVE"),
+    notes: z.string().optional(),
+    holdingId: z.string().min(1, "Holding is required"),
+});
+
+export type OwnershipContractFormData = z.infer<typeof ownershipContractSchema>;
+
+// ─── Client Schemas ───────────────────────────────────────────────────────────
+
+export const clientSchema = z.object({
+    name: z.string().min(1, "Client name is required"),
+    contactPerson: z.string().min(1, "Contact person is required"),
+    email: z.string().email("Invalid email").optional().or(z.literal("")),
+    phone: z.string().min(1, "Phone is required"),
+    gstNumber: z.string().optional(),
+    panNumber: z.string().optional(),
+    address: z.string().min(1, "Address is required"),
+    isActive: z.boolean().default(true),
+    cityId: z.string().optional(),
+});
+
+export type ClientFormData = z.infer<typeof clientSchema>;
+
+// ─── Booking Schemas ──────────────────────────────────────────────────────────
+
+export const bookingSchema = z.object({
+    bookingNumber: z.string().min(1, "Booking number is required"),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    monthlyRate: z.coerce.number().positive("Monthly rate must be positive"),
+    totalAmount: z.coerce.number().positive("Total amount must be positive"),
+    billingCycle: z.enum(["MONTHLY", "QUARTERLY", "HALF_YEARLY", "YEARLY"]).default("MONTHLY"),
+    status: z.enum(["CONFIRMED", "ACTIVE", "COMPLETED", "CANCELLED"]).default("CONFIRMED"),
+    notes: z.string().optional(),
+    clientId: z.string().min(1, "Client is required"),
+    holdingId: z.string().min(1, "Holding is required"),
+});
+
+export type BookingFormData = z.infer<typeof bookingSchema>;
+
+// ─── Advertisement Schemas ────────────────────────────────────────────────────
+
+export const advertisementSchema = z.object({
+    campaignName: z.string().min(1, "Campaign name is required"),
+    brandName: z.string().min(1, "Brand name is required"),
+    artworkDescription: z.string().optional(),
+    artworkUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+    freeInstallationDays: z.coerce.number().int().min(0).default(0),
+    installationDate: z.coerce.date().optional(),
+    removalDate: z.coerce.date().optional(),
+    status: z.enum(["PENDING", "INSTALLED", "ACTIVE", "REMOVED", "COMPLETED"]).default("PENDING"),
+    notes: z.string().optional(),
+    bookingId: z.string().min(1, "Booking is required"),
+});
+
+export type AdvertisementFormData = z.infer<typeof advertisementSchema>;
+
+// ─── Task Schemas ─────────────────────────────────────────────────────────────
+
+export const taskSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().optional(),
+    taskType: z.enum(["INSTALLATION", "MOUNTING", "MAINTENANCE", "INSPECTION"]),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
+    status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"]).default("PENDING"),
+    scheduledDate: z.coerce.date(),
+    completedDate: z.coerce.date().optional(),
+    assignedTo: z.string().optional(),
+    estimatedCost: z.coerce.number().optional(),
+    actualCost: z.coerce.number().optional(),
+    notes: z.string().optional(),
+    holdingId: z.string().optional(),
+    advertisementId: z.string().optional(),
+});
+
+export type TaskFormData = z.infer<typeof taskSchema>;
+
+// ─── Task Execution Schemas ───────────────────────────────────────────────────
+
+export const taskExecutionSchema = z.object({
+    taskId: z.string().min(1, "Task ID is required"),
+    status: z.enum(["COMPLETED", "CANCELLED"]).default("COMPLETED"),
+    condition: z.enum(["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"]),
+    remarks: z.string().optional(),
+    latitude: z.coerce.number(),
+    longitude: z.coerce.number(),
+    frontViewUrl: z.string().min(1, "Front view photo is required"),
+    leftViewUrl: z.string().min(1, "Left view photo is required"),
+    rightViewUrl: z.string().min(1, "Right view photo is required"),
+});
+
+export type TaskExecutionFormData = z.infer<typeof taskExecutionSchema>;
+
+// ─── Invoice Schemas ──────────────────────────────────────────────────────────
+
+export const invoiceSchema = z.object({
+    invoiceNumber: z.string().min(1, "Invoice number is required"),
+    invoiceDate: z.coerce.date(),
+    dueDate: z.coerce.date(),
+    subtotal: z.coerce.number().positive(),
+    cgstRate: z.coerce.number().min(0).default(9),
+    sgstRate: z.coerce.number().min(0).default(9),
+    igstRate: z.coerce.number().min(0).default(0),
+    cgstAmount: z.coerce.number().min(0),
+    sgstAmount: z.coerce.number().min(0),
+    igstAmount: z.coerce.number().min(0).default(0),
+    totalAmount: z.coerce.number().positive(),
+    paidAmount: z.coerce.number().min(0).default(0),
+    status: z.enum(["DRAFT", "SENT", "PAID", "PARTIALLY_PAID", "OVERDUE", "CANCELLED"]).default("DRAFT"),
+    notes: z.string().optional(),
+    clientId: z.string().min(1, "Client is required"),
+    bookingId: z.string().min(1, "Booking is required"),
+    hsnCodeId: z.string().min(1, "HSN code is required"),
+});
+
+export type InvoiceFormData = z.infer<typeof invoiceSchema>;
+
+// ─── Receipt Schemas ──────────────────────────────────────────────────────────
+
+export const receiptSchema = z.object({
+    receiptNumber: z.string().min(1, "Receipt number is required"),
+    receiptDate: z.coerce.date(),
+    amount: z.coerce.number().positive("Amount must be positive"),
+    paymentMode: z.enum(["CASH", "CHEQUE", "NEFT", "RTGS", "UPI", "CARD", "OTHER"]),
+    referenceNo: z.string().optional(),
+    notes: z.string().optional(),
+    clientId: z.string().min(1, "Client is required"),
+    invoiceId: z.string().min(1, "Invoice is required"),
+});
+
+export type ReceiptFormData = z.infer<typeof receiptSchema>;
+
+// ─── Location Suggestion Schemas ──────────────────────────────────────────────
+
+export const locationSuggestionSchema = z.object({
+    address: z.string().min(1, "Address is required"),
+    cityId: z.string().min(1, "City is required"),
+    latitude: z.coerce.number().optional(),
+    longitude: z.coerce.number().optional(),
+    landmark: z.string().optional(),
+    description: z.string().optional(),
+    // photos: z.array(z.string().url()).optional(), // Keeping simple string for now if needed or omit
+    proposedRent: z.coerce.number().positive().optional(),
+    ownerName: z.string().optional(),
+    ownerPhone: z.string().optional(),
+    status: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).default("PENDING"),
+});
+
+export type LocationSuggestionFormData = z.infer<typeof locationSuggestionSchema>;

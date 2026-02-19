@@ -1,0 +1,402 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { bookingSchema, type BookingFormData } from "@/lib/validations";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { createBooking, updateBooking } from "@/actions/bookings";
+import { cn } from "@/lib/utils";
+import { Client, Holding, Booking, City } from "@prisma/client";
+
+interface HoldingWithCity extends Holding {
+    city?: City;
+}
+
+interface BookingFormProps {
+    initialData?: Booking;
+    clients: Client[];
+    holdings: HoldingWithCity[];
+}
+
+export function BookingForm({ initialData, clients, holdings }: BookingFormProps) {
+    const router = useRouter();
+    const [duration, setDuration] = useState<number>(0);
+
+    const defaultValues: Partial<BookingFormData> = initialData
+        ? {
+            bookingNumber: initialData.bookingNumber,
+            startDate: new Date(initialData.startDate),
+            endDate: new Date(initialData.endDate),
+            monthlyRate: Number(initialData.monthlyRate),
+            totalAmount: Number(initialData.totalAmount),
+            billingCycle: initialData.billingCycle as "MONTHLY" | "QUARTERLY" | "HALF_YEARLY" | "YEARLY",
+            status: initialData.status as "CONFIRMED" | "ACTIVE" | "COMPLETED" | "CANCELLED",
+            notes: initialData.notes || undefined,
+            clientId: initialData.clientId,
+            holdingId: initialData.holdingId,
+        }
+        : {
+            bookingNumber: "",
+            startDate: undefined,
+            endDate: undefined,
+            monthlyRate: 0,
+            totalAmount: 0,
+            billingCycle: "MONTHLY",
+            status: "CONFIRMED",
+            clientId: "",
+            holdingId: "",
+        };
+
+    const form = useForm<BookingFormData>({
+        resolver: zodResolver(bookingSchema) as any,
+        defaultValues: defaultValues as any,
+    });
+
+    // Watch fields for calculations
+    const startDate = form.watch("startDate");
+    const endDate = form.watch("endDate");
+    const monthlyRate = form.watch("monthlyRate");
+    const selectedHoldingId = form.watch("holdingId");
+
+    // Auto-calculate Total Amount based on duration and monthly rate
+    useEffect(() => {
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            setDuration(diffDays);
+
+            if (monthlyRate) {
+                // Simple calculation: (Monthly Rate / 30) * Days
+                // Or proper date difference in months.
+                // Let's use daily rate approximation for now: Rate / 30 * Days
+                const amount = (Number(monthlyRate) / 30) * diffDays;
+                form.setValue("totalAmount", parseFloat(amount.toFixed(2)));
+            }
+        }
+    }, [startDate, endDate, monthlyRate, form]);
+
+    // Format holding label with price/availability info?
+    // Maybe show default rate if available on holding? No, holding doesn't have rate in schema yet.
+    // Wait, ownership contract has Rent Amount. But Booking Rate is different.
+
+    // Auto-generate Booking Number
+    useEffect(() => {
+        if (!initialData && !form.getValues("bookingNumber")) {
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            form.setValue("bookingNumber", `BK-${new Date().getFullYear()}-${random}`);
+        }
+    }, [initialData, form]);
+
+
+    const onSubmit = async (data: BookingFormData) => {
+        try {
+            if (initialData) {
+                await updateBooking(initialData.id, data);
+                toast.success("Booking updated successfully");
+            } else {
+                await createBooking(data);
+                toast.success("Booking created successfully");
+            }
+            router.push("/bookings");
+            router.refresh();
+        } catch (error) {
+            toast.error("Failed to save booking. Check availability.");
+            console.error(error);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                        control={form.control}
+                        name="bookingNumber"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Booking Number</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Auto-generated" {...field} readOnly className="bg-muted" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="clientId"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Client</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select client" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {clients.map((client) => (
+                                            <SelectItem key={client.id} value={client.id}>
+                                                {client.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="holdingId"
+                        render={({ field }) => (
+                            <FormItem className="col-span-2">
+                                <FormLabel>Holding</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select holding" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {holdings.map((holding) => (
+                                            <SelectItem key={holding.id} value={holding.id}>
+                                                {holding.code} - {holding.name} ({holding.city?.name || 'Unknown City'})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>Start Date</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full pl-3 text-left font-normal",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(field.value, "PPP")
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            disabled={(date) =>
+                                                date < new Date("1900-01-01")
+                                            }
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="endDate"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>End Date</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button
+                                                variant={"outline"}
+                                                className={cn(
+                                                    "w-full pl-3 text-left font-normal",
+                                                    !field.value && "text-muted-foreground"
+                                                )}
+                                            >
+                                                {field.value ? (
+                                                    format(field.value, "PPP")
+                                                ) : (
+                                                    <span>Pick a date</span>
+                                                )}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={field.onChange}
+                                            disabled={(date) =>
+                                                date < new Date("1900-01-01")
+                                            }
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <div className="col-span-2 bg-muted/30 p-3 rounded-md text-sm text-muted-foreground">
+                        Duration: <span className="font-medium text-foreground">{duration} days</span>
+                    </div>
+
+                    <FormField
+                        control={form.control}
+                        name="monthlyRate"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Monthly Rate (₹)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="totalAmount"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Total Amount (₹)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                                </FormControl>
+                                <FormDescription>
+                                    Auto-calculated based on duration and monthly rate.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="billingCycle"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Billing Cycle</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select cycle" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="MONTHLY">Monthly</SelectItem>
+                                        <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                                        <SelectItem value="HALF_YEARLY">Half Yearly</SelectItem>
+                                        <SelectItem value="YEARLY">Yearly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select status" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                                        <SelectItem value="ACTIVE">Active</SelectItem>
+                                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="notes"
+                        render={({ field }) => (
+                            <FormItem className="col-span-2">
+                                <FormLabel>Notes</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Booking notes" {...field} value={field.value || ""} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <div className="flex justify-end gap-4">
+                    <Button variant="outline" type="button" onClick={() => router.back()}>
+                        Cancel
+                    </Button>
+                    <Button type="submit">
+                        {initialData ? "Update Booking" : "Create Booking"}
+                    </Button>
+                </div>
+            </form>
+        </Form>
+    );
+}
