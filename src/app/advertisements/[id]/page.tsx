@@ -1,10 +1,10 @@
-import { getAdvertisement } from "@/actions/advertisements";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate, serializePrisma } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { Megaphone, Calendar, ImageIcon, User, Pencil, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -17,13 +17,17 @@ interface AdvertisementDetailsPageProps {
 
 export default async function AdvertisementDetailsPage({ params }: AdvertisementDetailsPageProps) {
     const { id } = await params;
-    const rawAd = await getAdvertisement(id);
 
-    if (!rawAd) {
+    let advertisement: any;
+    try {
+        advertisement = await apiFetch<any>(`/api/advertisements/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const advertisement = serializePrisma(rawAd);
+    if (!advertisement) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-4xl mx-auto">

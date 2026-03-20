@@ -1,9 +1,10 @@
-import { getTask } from "@/actions/tasks";
 import { notFound, redirect } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { CompleteTaskForm } from "@/components/tasks/complete-task-form";
 import { ClipboardCheck } from "lucide-react";
 import { auth } from "@/auth";
+import { formatDate } from "@/lib/utils";
 
 interface CompleteTaskPageProps {
     params: {
@@ -19,7 +20,12 @@ export default async function CompleteTaskPage({ params }: CompleteTaskPageProps
         redirect("/login");
     }
 
-    const task = await getTask(id);
+    let task: any;
+    try {
+        task = await apiFetch<any>(`/api/tasks/${id}`);
+    } catch (error) {
+        notFound();
+    }
 
     if (!task) {
         notFound();
@@ -55,7 +61,7 @@ export default async function CompleteTaskPage({ params }: CompleteTaskPageProps
                     </div>
                     <div>
                         <p className="font-medium text-foreground">Assigned Date</p>
-                        <p>{task.scheduledDate.toLocaleDateString()}</p>
+                        <p>{formatDate(task.scheduledDate)}</p>
                     </div>
                 </div>
             </div>

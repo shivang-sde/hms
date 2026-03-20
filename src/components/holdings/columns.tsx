@@ -14,7 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteHolding } from "@/actions/holdings";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -66,7 +66,7 @@ function HoldingActions({ holding }: { holding: Holding }) {
 
     const handleDelete = async () => {
         try {
-            await deleteHolding(holding.id);
+            await apiFetch(`/api/holdings/${holding.id}`, { method: 'DELETE' });
             toast.success("Holding deleted successfully");
             router.refresh();
         } catch (error) {

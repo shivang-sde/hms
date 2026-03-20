@@ -1,10 +1,10 @@
-import { getInvoice } from "@/actions/finance";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, serializePrisma } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Receipt, Printer, Pencil } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -17,13 +17,17 @@ interface InvoiceDetailsPageProps {
 
 export default async function InvoiceDetailsPage({ params }: InvoiceDetailsPageProps) {
     const { id } = await params;
-    const rawInvoice = await getInvoice(id);
 
-    if (!rawInvoice) {
+    let invoice: any;
+    try {
+        invoice = await apiFetch<any>(`/api/invoices/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const invoice = serializePrisma(rawInvoice);
+    if (!invoice) {
+        notFound();
+    }
 
     const subtotal = invoice.subtotal;
     const taxTotal = (invoice.cgstAmount || 0) + (invoice.sgstAmount || 0) + (invoice.igstAmount || 0);

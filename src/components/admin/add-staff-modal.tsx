@@ -23,8 +23,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Loader2 } from "lucide-react";
-import { createStaffUser } from "@/actions/users";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const staffSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,6 +36,7 @@ const staffSchema = z.object({
 type StaffFormValues = z.infer<typeof staffSchema>;
 
 export function AddStaffModal() {
+    const router = useRouter();
     const [open, setOpen] = useState(false);
     const form = useForm<StaffFormValues>({
         resolver: zodResolver(staffSchema),
@@ -47,10 +49,14 @@ export function AddStaffModal() {
 
     const onSubmit = async (data: StaffFormValues) => {
         try {
-            await createStaffUser(data);
+            await apiFetch('/api/users', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
             toast.success("Staff member created successfully");
             setOpen(false);
             form.reset();
+            router.refresh();
         } catch (error) {
             toast.error("Failed to create staff member");
             console.error(error);

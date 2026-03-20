@@ -1,8 +1,7 @@
-import { getDashboardStats, getStaffStats } from "@/actions/dashboard";
-import { serializePrisma } from "@/lib/utils";
 import { auth } from "@/auth";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { StaffDashboard } from "@/components/dashboard/staff-dashboard";
+import { apiFetch } from "@/lib/api";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -10,12 +9,11 @@ export default async function DashboardPage() {
   const userId = session?.user?.id;
 
   if (role === "STAFF" && userId) {
-    const rawStats = await getStaffStats(userId);
-    const stats = serializePrisma(rawStats);
+    const stats = await apiFetch<any>(`/api/dashboard/staff/${userId}`);
     return <StaffDashboard stats={stats} />;
   }
 
-  const rawStats = await getDashboardStats();
-  const stats = serializePrisma(rawStats);
+  const stats = await apiFetch<any>("/api/dashboard");
+
   return <AdminDashboard stats={stats} />;
 }

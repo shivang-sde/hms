@@ -32,12 +32,12 @@ export function PageHeader({
                     <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {children}
                 {actionLabel && onAction && (
                     <Button
                         onClick={onAction}
-                        className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 w-full sm:w-auto"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         {actionLabel}

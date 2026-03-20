@@ -1,10 +1,8 @@
 import { HoldingForm } from "@/components/holdings/holding-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getHolding } from "@/actions/holdings";
-import { getCities, getHoldingTypes, getHsnCodes } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 interface EditHoldingPageProps {
     params: {
@@ -14,21 +12,26 @@ interface EditHoldingPageProps {
 
 export default async function EditHoldingPage({ params }: EditHoldingPageProps) {
     const { id } = await params;
-    const [rawHolding, rawCities, rawTypes, rawHsnCodes] = await Promise.all([
-        getHolding(id),
-        getCities(),
-        getHoldingTypes(),
-        getHsnCodes(),
-    ]);
 
-    if (!rawHolding) {
+    let holding: any;
+    let cities: any[];
+    let types: any[];
+    let hsnCodes: any[];
+
+    try {
+        [holding, cities, types, hsnCodes] = await Promise.all([
+            apiFetch<any>(`/api/holdings/${id}`),
+            apiFetch<any[]>("/api/master-data/cities"),
+            apiFetch<any[]>("/api/master-data/holding-types"),
+            apiFetch<any[]>("/api/master-data/hsn-codes"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const holding = serializePrisma(rawHolding);
-    const cities = serializePrisma(rawCities);
-    const types = serializePrisma(rawTypes);
-    const hsnCodes = serializePrisma(rawHsnCodes);
+    if (!holding) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-3xl mx-auto">

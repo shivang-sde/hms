@@ -1,30 +1,27 @@
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable } from "@/components/shared/data-table";
 import { AdvertisementListColumns } from "@/components/advertisements/columns";
-import { getAdvertisements } from "@/actions/advertisements";
 import { Button } from "@/components/ui/button";
 import { Plus, Megaphone } from "lucide-react";
 import Link from "next/link";
-import { serializePrisma } from "@/lib/utils";
 
 export default async function AdvertisementsPage() {
-    const rawAdvertisements = await getAdvertisements();
-    const advertisements = serializePrisma(rawAdvertisements);
+    const advertisements = await apiFetch<any[]>("/api/advertisements");
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <PageHeader
-                    title="Advertisements"
-                    description="Manage campaigns, artwork, and creative assets."
-                    icon={Megaphone}
-                />
-                <Button asChild>
+            <PageHeader
+                title="Advertisements"
+                description="Manage campaigns, artwork, and creative assets."
+                icon={Megaphone}
+            >
+                <Button asChild className="w-full sm:w-auto">
                     <Link href="/advertisements/new">
                         <Plus className="mr-2 h-4 w-4" /> New Advertisement
                     </Link>
                 </Button>
-            </div>
+            </PageHeader>
             <div className="bg-card">
                 <DataTable
                     columns={AdvertisementListColumns}

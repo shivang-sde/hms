@@ -1,10 +1,8 @@
 import { SuggestionForm } from "@/components/suggestions/suggestion-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getSuggestion } from "@/actions/suggestions";
-import { getCities } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 interface EditSuggestionPageProps {
     params: {
@@ -14,17 +12,22 @@ interface EditSuggestionPageProps {
 
 export default async function EditSuggestionPage({ params }: EditSuggestionPageProps) {
     const { id } = await params;
-    const [rawSuggestion, rawCities] = await Promise.all([
-        getSuggestion(id),
-        getCities(),
-    ]);
 
-    if (!rawSuggestion) {
+    let suggestion: any;
+    let cities: any[];
+
+    try {
+        [suggestion, cities] = await Promise.all([
+            apiFetch<any>(`/api/location-suggestions/${id}`),
+            apiFetch<any[]>("/api/master-data/cities"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const suggestion = serializePrisma(rawSuggestion);
-    const cities = serializePrisma(rawCities);
+    if (!suggestion) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

@@ -14,10 +14,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
     return (
         <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 ml-[260px] transition-all duration-300">
+            <Sidebar className="hidden md:block" />
+            <div className="flex-1 md:ml-[260px] transition-all duration-300">
                 <Header />
-                <main className="p-6">{children}</main>
+                <main className="p-4 md:p-6">{children}</main>
             </div>
         </div>
     );

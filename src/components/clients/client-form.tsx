@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { clientSchema, type ClientFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createClient, updateClient } from "@/actions/clients";
+import { apiFetch } from "@/lib/api";
 import { City, Client } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -69,10 +69,16 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
     const onSubmit = async (data: ClientFormData) => {
         try {
             if (initialData) {
-                await updateClient(initialData.id, data);
+                await apiFetch(`/api/clients/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Client updated successfully");
             } else {
-                await createClient(data);
+                await apiFetch('/api/clients', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Client created successfully");
             }
             router.push("/clients");
@@ -229,11 +235,11 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
 
                 </div>
 
-                <div className="flex justify-end gap-4">
-                    <Button variant="outline" type="button" onClick={() => router.back()}>
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+                    <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">
                         Cancel
                     </Button>
-                    <Button type="submit">
+                    <Button type="submit" className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
                         {initialData ? "Update Client" : "Create Client"}
                     </Button>
                 </div>

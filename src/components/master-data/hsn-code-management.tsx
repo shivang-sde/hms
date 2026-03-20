@@ -32,8 +32,9 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { hsnCodeSchema, type HsnCodeFormData } from "@/lib/validations";
-import { createHsnCode, updateHsnCode, deleteHsnCode } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 interface HsnCodeManagementProps {
@@ -41,6 +42,7 @@ interface HsnCodeManagementProps {
 }
 
 export function HsnCodeManagement({ hsnCodes }: HsnCodeManagementProps) {
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingHsn, setEditingHsn] = useState<any | null>(null);
@@ -58,15 +60,22 @@ export function HsnCodeManagement({ hsnCodes }: HsnCodeManagementProps) {
     const onSubmit = async (data: HsnCodeFormData) => {
         try {
             if (editingHsn) {
-                await updateHsnCode(editingHsn.id, data);
+                await apiFetch(`/api/master-data/hsn-codes/${editingHsn.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("HSN code updated successfully");
             } else {
-                await createHsnCode(data);
+                await apiFetch('/api/master-data/hsn-codes', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("HSN code created successfully");
             }
             setIsDialogOpen(false);
             setEditingHsn(null);
             form.reset();
+            router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
         }
@@ -86,8 +95,9 @@ export function HsnCodeManagement({ hsnCodes }: HsnCodeManagementProps) {
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this HSN code?")) {
             try {
-                await deleteHsnCode(id);
+                await apiFetch(`/api/master-data/hsn-codes/${id}`, { method: 'DELETE' });
                 toast.success("HSN code deleted successfully");
+                router.refresh();
             } catch (error) {
                 toast.error("Failed to delete HSN code");
             }

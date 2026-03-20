@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { receiptSchema, type ReceiptFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createReceipt } from "@/actions/finance";
+import { apiFetch } from "@/lib/api";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Client, Invoice } from "@prisma/client";
 
@@ -94,7 +94,10 @@ export function ReceiptForm({ clients, invoices }: ReceiptFormProps) {
 
     const onSubmit = async (data: ReceiptFormData) => {
         try {
-            await createReceipt(data);
+            await apiFetch('/api/receipts', {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
             toast.success("Receipt created & Invoice updated!");
             router.push("/billing");
             router.refresh();

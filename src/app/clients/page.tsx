@@ -1,30 +1,27 @@
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable } from "@/components/shared/data-table";
 import { ClientListColumns } from "@/components/clients/columns";
-import { getClients } from "@/actions/clients";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
-import { serializePrisma } from "@/lib/utils";
 
 export default async function ClientsPage() {
-    const rawClients = await getClients();
-    const clients = serializePrisma(rawClients);
+    const clients = await apiFetch<any[]>("/api/clients");
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <PageHeader
-                    title="Clients"
-                    description="Manage your advertisers and agencies."
-                    icon={Users}
-                />
-                <Button asChild>
+            <PageHeader
+                title="Clients"
+                description="Manage your advertisers and agencies."
+                icon={Users}
+            >
+                <Button asChild className="w-full sm:w-auto">
                     <Link href="/clients/new">
                         <Plus className="mr-2 h-4 w-4" /> Add Client
                     </Link>
                 </Button>
-            </div>
+            </PageHeader>
             <div className="bg-card">
                 <DataTable
                     columns={ClientListColumns}

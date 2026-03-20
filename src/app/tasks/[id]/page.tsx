@@ -1,10 +1,10 @@
-import { getTask } from "@/actions/tasks";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, formatEnum, serializePrisma } from "@/lib/utils";
+import { formatCurrency, formatDate, formatEnum } from "@/lib/utils";
 import {
     ClipboardList,
     Calendar,
@@ -31,13 +31,17 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
     const session = await auth();
     const role = session?.user?.role;
     const { id } = await params;
-    const rawTask = await getTask(id);
 
-    if (!rawTask) {
+    let task: any;
+    try {
+        task = await apiFetch<any>(`/api/tasks/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const task = serializePrisma(rawTask);
+    if (!task) {
+        notFound();
+    }
     const canComplete = role === "STAFF" && (task.status === "PENDING" || task.status === "IN_PROGRESS");
 
     return (
@@ -164,7 +168,7 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
                                                 <p className="text-xs font-semibold text-muted-foreground uppercase">Location</p>
                                                 <div className="flex items-center gap-1.5 font-mono text-xs bg-muted px-2 py-1 rounded w-fit">
                                                     <MapPin className="h-3 w-3" />
-                                                    {exec.latitude.toFixed(6)}, {exec.longitude.toFixed(6)}
+                                                    {Number(exec.latitude).toFixed(6)}, {Number(exec.longitude).toFixed(6)}
                                                 </div>
                                             </div>
                                         </div>
@@ -187,12 +191,13 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
                                                     <div key={idx} className="space-y-1.5">
                                                         <div className="aspect-video rounded-lg overflow-hidden border bg-muted">
                                                             {photo.url ? (
-                                                                <img
-                                                                    src={photo.url}
-                                                                    alt={photo.label}
-                                                                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-                                                                    onClick={() => window.open(photo.url, "_blank")}
-                                                                />
+                                                                <a href={photo.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
+                                                                    <img
+                                                                        src={photo.url}
+                                                                        alt={photo.label}
+                                                                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                                                    />
+                                                                </a>
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                                                                     No photo

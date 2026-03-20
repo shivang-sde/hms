@@ -33,7 +33,7 @@ import {
 import { advertisementSchema, type AdvertisementFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createAdvertisement, updateAdvertisement } from "@/actions/advertisements";
+import { apiFetch } from "@/lib/api";
 import { Booking } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -91,10 +91,16 @@ export function AdvertisementForm({ initialData, bookings }: AdvertisementFormPr
     const onSubmit = async (data: AdvertisementFormData) => {
         try {
             if (initialData) {
-                await updateAdvertisement(initialData.id, data);
+                await apiFetch(`/api/advertisements/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Advertisement updated successfully");
             } else {
-                await createAdvertisement(data);
+                await apiFetch('/api/advertisements', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Advertisement created successfully");
             }
             router.push("/advertisements");

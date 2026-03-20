@@ -1,15 +1,13 @@
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable } from "@/components/shared/data-table";
 import { SuggestionListColumns } from "@/components/suggestions/columns";
-import { getSuggestions } from "@/actions/suggestions";
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin } from "lucide-react";
 import Link from "next/link";
-import { serializePrisma } from "@/lib/utils";
 
 export default async function SuggestionsPage() {
-    const rawSuggestions = await getSuggestions();
-    const suggestions = serializePrisma(rawSuggestions);
+    const suggestions = await apiFetch<any[]>("/api/location-suggestions");
 
     return (
         <div className="space-y-6">

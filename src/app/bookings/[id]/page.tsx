@@ -1,11 +1,11 @@
-import { getBooking } from "@/actions/bookings";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, serializePrisma } from "@/lib/utils";
-import { CalendarDays, MapPin, User, FileText, ImageIcon, Pencil } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { CalendarDays, MapPin, User, ImageIcon, Pencil } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 
@@ -17,13 +17,17 @@ interface BookingDetailsPageProps {
 
 export default async function BookingDetailsPage({ params }: BookingDetailsPageProps) {
     const { id } = await params;
-    const rawBooking = await getBooking(id);
 
-    if (!rawBooking) {
+    let booking: any;
+    try {
+        booking = await apiFetch<any>(`/api/bookings/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const booking = serializePrisma(rawBooking);
+    if (!booking) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6">

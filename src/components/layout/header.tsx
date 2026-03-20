@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Moon, Sun, LogOut } from "lucide-react";
+import { Bell, Moon, Sun, LogOut, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -14,27 +14,45 @@ import {
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { logout } from "@/actions/auth";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { SidebarContent } from "./sidebar";
+import { useState } from "react";
 
 export function Header() {
     const { setTheme, theme } = useTheme();
     const { data: session } = useSession();
+    const [open, setOpen] = useState(false);
 
     const userName = session?.user?.name || session?.user?.email?.split('@')[0] || "User";
     const userRole = session?.user?.role || "Staff";
     const userInitial = userName[0].toUpperCase();
 
     return (
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-6">
-            <div>
-                <h2 className="text-lg font-semibold tracking-tight">
-                    HMS Pro
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                    {userRole === "ADMIN" ? "Administrator Portal" : "Staff Portal"}
-                </p>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border/50 bg-background/80 backdrop-blur-xl px-4 md:px-6">
+            <div className="flex items-center gap-4">
+                <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 w-[260px]" showCloseButton={false}>
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        <SidebarContent onLinkClick={() => setOpen(false)} />
+                    </SheetContent>
+                </Sheet>
+
+                <div>
+                    <h2 className="text-lg font-semibold tracking-tight">
+                        HMS Pro
+                    </h2>
+                    <p className="text-xs text-muted-foreground hidden sm:block">
+                        {userRole === "ADMIN" ? "Administrator Portal" : "Staff Portal"}
+                    </p>
+                </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
                 <Button
                     variant="ghost"
                     size="icon"
@@ -57,13 +75,13 @@ export function Header() {
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="gap-2 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all">
+                        <Button variant="ghost" className="gap-2 px-1 md:px-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-all">
                             <Avatar className="h-8 w-8 border-2 border-primary/20">
                                 <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-bold">
                                     {userInitial}
                                 </AvatarFallback>
                             </Avatar>
-                            <div className="flex flex-col items-start gap-0.5">
+                            <div className="hidden sm:flex flex-col items-start gap-0.5">
                                 <span className="text-sm font-bold leading-none">{userName}</span>
                                 <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">{userRole}</span>
                             </div>

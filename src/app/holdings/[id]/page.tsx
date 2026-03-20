@@ -1,10 +1,10 @@
-import { getHolding } from "@/actions/holdings";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatArea, formatDate, formatEnum, serializePrisma } from "@/lib/utils";
+import { formatArea, formatDate, formatEnum } from "@/lib/utils";
 import { MapPin, Ruler, Lightbulb, Clock, Pencil, CalendarClock } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -17,13 +17,24 @@ interface HoldingDetailsPageProps {
 
 export default async function HoldingDetailsPage({ params }: HoldingDetailsPageProps) {
     const { id } = await params;
-    const rawHolding = await getHolding(id);
-
-    if (!rawHolding) {
+    let holding: any;
+    try {
+        holding = await apiFetch<any>(`/api/holdings/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const holding = serializePrisma(rawHolding);
+    if (!holding) {
+        notFound();
+    }
+
+    // Original page only wanted the active booking
+    const activeBooking = holding.bookings.find((b: any) => b.status === "ACTIVE");
+    // To maintain compatibility with existing template that uses holding.bookings[0]
+    const displayBookings = activeBooking ? [activeBooking] : [];
+
+    // Create a shadow copy to avoid mutating the original if needed, but here we just re-map
+    const viewHolding = { ...holding, bookings: displayBookings };
 
     return (
         <div className="space-y-6">

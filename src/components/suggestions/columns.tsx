@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteSuggestion } from "@/actions/suggestions";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -57,7 +57,7 @@ function SuggestionActions({ suggestion }: { suggestion: LocationSuggestion }) {
 
     const handleDelete = async () => {
         try {
-            await deleteSuggestion(suggestion.id);
+            await apiFetch(`/api/suggestions/${suggestion.id}`, { method: 'DELETE' });
             toast.success("Suggestion deleted successfully");
             router.refresh();
         } catch (error) {

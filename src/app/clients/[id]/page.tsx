@@ -1,10 +1,10 @@
-import { getClient } from "@/actions/clients";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, serializePrisma } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Users, Phone, Mail, MapPin, Receipt, CalendarClock, Pencil } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
@@ -17,15 +17,16 @@ interface ClientDetailsPageProps {
 
 export default async function ClientDetailsPage({ params }: ClientDetailsPageProps) {
     const { id } = await params;
-    const rawClient = await getClient(id);
-
-    if (!rawClient) {
+    let client: any;
+    try {
+        client = await apiFetch<any>(`/api/clients/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const client = serializePrisma(rawClient);
-
-    console.log(client);
+    if (!client) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto">

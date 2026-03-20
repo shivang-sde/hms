@@ -1,6 +1,5 @@
-"use client";
+"use client"
 
-import { Task } from "@prisma/client";
 import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,14 +11,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteTask } from "@/actions/tasks";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatEnum } from "@/lib/utils";
 
-export const TaskListColumns = [
+export const getTaskListColumns = (role?: string) => [
     {
         header: "Title",
         accessorKey: "title",
@@ -47,17 +46,17 @@ export const TaskListColumns = [
     },
     {
         header: "Actions",
-        cell: (row: any) => <TaskActions task={row} />,
+        cell: (row: any) => <TaskActions task={row} role={role} />,
         className: "text-right",
     },
 ];
 
-function TaskActions({ task }: { task: Task }) {
+function TaskActions({ task, role }: { task: any; role?: string }) {
     const router = useRouter();
 
     const handleDelete = async () => {
         try {
-            await deleteTask(task.id);
+            await apiFetch(`/api/tasks/${task.id}`, { method: 'DELETE' });
             toast.success("Task deleted successfully");
             router.refresh();
         } catch (error) {
@@ -80,15 +79,20 @@ function TaskActions({ task }: { task: Task }) {
                         <Eye className="mr-2 h-4 w-4" /> View Details
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`/tasks/${task.id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
+                {role === "ADMIN" && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href={`/tasks/${task.id}/edit`}>
+                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                    </>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

@@ -1,10 +1,8 @@
 import { AdvertisementForm } from "@/components/advertisements/advertisement-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getAdvertisement } from "@/actions/advertisements";
-import { getBookings } from "@/actions/bookings";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 interface EditAdvertisementPageProps {
     params: {
@@ -14,17 +12,22 @@ interface EditAdvertisementPageProps {
 
 export default async function EditAdvertisementPage({ params }: EditAdvertisementPageProps) {
     const { id } = await params;
-    const [rawAdvertisement, rawBookings] = await Promise.all([
-        getAdvertisement(id),
-        getBookings(),
-    ]);
 
-    if (!rawAdvertisement) {
+    let advertisement: any;
+    let bookings: any[];
+
+    try {
+        [advertisement, bookings] = await Promise.all([
+            apiFetch<any>(`/api/advertisements/${id}`),
+            apiFetch<any[]>("/api/bookings"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const advertisement = serializePrisma(rawAdvertisement);
-    const bookings = serializePrisma(rawBookings);
+    if (!advertisement) {
+        notFound();
+    }
 
 
 

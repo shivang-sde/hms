@@ -1,11 +1,11 @@
-import { getStaffUsers } from "@/actions/users";
+import { apiFetch } from "@/lib/api";
 import { StaffList } from "@/components/admin/staff-list";
 import { AddStaffModal } from "@/components/admin/add-staff-modal";
 import { PageHeader } from "@/components/shared/page-header";
 import { Users } from "lucide-react";
 
 export default async function StaffManagementPage() {
-    const staff = await getStaffUsers();
+    const staff = await apiFetch<any[]>("/api/users");
 
     return (
         <div className="space-y-6">

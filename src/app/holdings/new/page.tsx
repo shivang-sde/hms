@@ -1,9 +1,7 @@
 import { HoldingForm } from "@/components/holdings/holding-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getCities, getHoldingTypes, getHsnCodes } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { PlusCircle } from "lucide-react";
-import { Holding } from "@prisma/client";
-import { serializePrisma } from "@/lib/utils";
 
 interface NewHoldingPageProps {
     searchParams: {
@@ -17,18 +15,14 @@ interface NewHoldingPageProps {
 }
 
 export default async function NewHoldingPage({ searchParams }: NewHoldingPageProps) {
-    const [rawCities, rawTypes, rawHsnCodes] = await Promise.all([
-        getCities(),
-        getHoldingTypes(),
-        getHsnCodes(),
+    const [cities, types, hsnCodes] = await Promise.all([
+        apiFetch<any[]>("/api/master-data/cities"),
+        apiFetch<any[]>("/api/master-data/holding-types"),
+        apiFetch<any[]>("/api/master-data/hsn-codes"),
     ]);
 
-    const cities = serializePrisma(rawCities);
-    const types = serializePrisma(rawTypes);
-    const hsnCodes = serializePrisma(rawHsnCodes);
-
     // Construct partial initial data from search params if available
-    const initialData: Partial<Holding> = {};
+    const initialData: any = {};
     if (searchParams.address) initialData.address = decodeURIComponent(searchParams.address as string);
     if (searchParams.cityId) initialData.cityId = searchParams.cityId as string;
     if (searchParams.lat) initialData.latitude = Number(searchParams.lat) as any;
@@ -48,7 +42,7 @@ export default async function NewHoldingPage({ searchParams }: NewHoldingPagePro
                     cities={cities}
                     types={types}
                     hsnCodes={hsnCodes}
-                    initialData={Object.keys(initialData).length > 0 ? initialData as Holding : undefined}
+                    initialData={Object.keys(initialData).length > 0 ? initialData : undefined}
                 />
             </div>
         </div>

@@ -1,15 +1,15 @@
-import { getCities, getHoldingTypes, getHsnCodes } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CityManagement } from "@/components/master-data/city-management";
 import { HoldingTypeManagement } from "@/components/master-data/holding-type-management";
 import { HsnCodeManagement } from "@/components/master-data/hsn-code-management";
-import { Database, MapPin, Layers, Hash } from "lucide-react";
+import { MapPin, Layers, Hash } from "lucide-react";
 
 export default async function MasterDataPage() {
     const [cities, holdingTypes, hsnCodes] = await Promise.all([
-        getCities(),
-        getHoldingTypes(),
-        getHsnCodes(),
+        apiFetch<any[]>("/api/master-data/cities"),
+        apiFetch<any[]>("/api/master-data/holding-types"),
+        apiFetch<any[]>("/api/master-data/hsn-codes"),
     ]);
 
     return (

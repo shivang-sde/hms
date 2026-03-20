@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteClient } from "@/actions/clients";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -62,7 +62,7 @@ function ClientActions({ client }: { client: Client }) {
 
     const handleDelete = async () => {
         try {
-            await deleteClient(client.id);
+            await apiFetch(`/api/clients/${client.id}`, { method: 'DELETE' });
             toast.success("Client deleted successfully");
             router.refresh();
         } catch (error) {

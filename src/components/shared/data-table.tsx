@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface Column<T> {
     header: string;
@@ -32,6 +33,7 @@ export function DataTable<T extends { id?: string }>({
     emptyMessage = "No data found",
     onRowClick,
 }: DataTableProps<T>) {
+
     if (loading) {
         return (
             <div className="rounded-xl border border-border/50 overflow-hidden">
@@ -62,51 +64,53 @@ export function DataTable<T extends { id?: string }>({
     }
 
     return (
-        <div className="rounded-xl border border-border/50 overflow-hidden">
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/30 hover:bg-muted/30">
-                        {columns.map((col, i) => (
-                            <TableHead
-                                key={i}
-                                className={`text-xs font-semibold uppercase tracking-wider text-muted-foreground ${col.className || ""}`}
-                            >
-                                {col.header}
-                            </TableHead>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {data.length === 0 ? (
-                        <TableRow>
-                            <TableCell
-                                colSpan={columns.length}
-                                className="h-32 text-center text-muted-foreground"
-                            >
-                                {emptyMessage}
-                            </TableCell>
+        <div className="rounded-xl border border-border/50 overflow-hidden bg-card">
+            <div className="overflow-x-auto scrollbar-hide">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                            {columns.map((col, i) => (
+                                <TableHead
+                                    key={i}
+                                    className={`text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap ${col.className || ""}`}
+                                >
+                                    {col.header}
+                                </TableHead>
+                            ))}
                         </TableRow>
-                    ) : (
-                        data.map((row, i) => (
-                            <TableRow
-                                key={row.id || i}
-                                className={onRowClick ? "cursor-pointer hover:bg-muted/30" : ""}
-                                onClick={() => onRowClick?.(row)}
-                            >
-                                {columns.map((col, j) => (
-                                    <TableCell key={j} className={col.className}>
-                                        {col.cell
-                                            ? col.cell(row)
-                                            : col.accessorKey
-                                                ? String((row as Record<string, unknown>)[col.accessorKey as string] ?? "")
-                                                : ""}
-                                    </TableCell>
-                                ))}
+                    </TableHeader>
+                    <TableBody>
+                        {data.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={columns.length}
+                                    className="h-32 text-center text-muted-foreground"
+                                >
+                                    {emptyMessage}
+                                </TableCell>
                             </TableRow>
-                        ))
-                    )}
-                </TableBody>
-            </Table>
+                        ) : (
+                            data.map((row, i) => (
+                                <TableRow
+                                    key={row.id || i}
+                                    className={onRowClick ? "cursor-pointer hover:bg-muted/30" : ""}
+                                    onClick={() => onRowClick?.(row)}
+                                >
+                                    {columns.map((col, j) => (
+                                        <TableCell key={j} className={cn("whitespace-nowrap", col.className)}>
+                                            {col.cell
+                                                ? col.cell(row)
+                                                : col.accessorKey
+                                                    ? String((row as Record<string, unknown>)[col.accessorKey as string] ?? "")
+                                                    : ""}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 }

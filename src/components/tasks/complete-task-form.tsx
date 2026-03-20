@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { taskExecutionSchema, type TaskExecutionFormData } from "@/lib/validations";
-import { submitTaskExecution } from "@/actions/tasks";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -37,8 +37,8 @@ export function CompleteTaskForm({ taskId }: CompleteTaskFormProps) {
         resolver: zodResolver(taskExecutionSchema),
         defaultValues: {
             taskId: taskId,
-            status: "COMPLETED" as const,
-            condition: "GOOD" as const,
+            status: "COMPLETED",
+            condition: "GOOD",
             remarks: "",
             latitude: 0,
             longitude: 0,
@@ -77,7 +77,10 @@ export function CompleteTaskForm({ taskId }: CompleteTaskFormProps) {
         }
 
         try {
-            await submitTaskExecution(data);
+            await apiFetch(`/api/tasks/${taskId}/executions`, {
+                method: 'POST',
+                body: JSON.stringify(data),
+            });
             toast.success("Task execution submitted successfully!");
             router.push(`/tasks/${taskId}`);
             router.refresh();

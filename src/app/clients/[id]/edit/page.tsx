@@ -1,10 +1,8 @@
 import { ClientForm } from "@/components/clients/client-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getClient } from "@/actions/clients";
-import { getCities } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 interface EditClientPageProps {
     params: {
@@ -14,17 +12,22 @@ interface EditClientPageProps {
 
 export default async function EditClientPage({ params }: EditClientPageProps) {
     const { id } = await params;
-    const [rawClient, rawCities] = await Promise.all([
-        getClient(id),
-        getCities(),
-    ]);
 
-    if (!rawClient) {
+    let client: any;
+    let cities: any[];
+
+    try {
+        [client, cities] = await Promise.all([
+            apiFetch<any>(`/api/clients/${id}`),
+            apiFetch<any[]>("/api/master-data/cities"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const client = serializePrisma(rawClient);
-    const cities = serializePrisma(rawCities);
+    if (!client) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

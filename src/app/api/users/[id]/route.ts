@@ -1,0 +1,50 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { auth } from "@/auth";
+import bcrypt from "bcryptjs";
+
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const session = await auth();
+        if (!session || session.user?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = await params;
+        const body = await request.json();
+        const { name, email, password } = body;
+
+        const updateData: any = { name, email };
+
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+            updateData.plainPassword = password;
+        }
+
+        const user = await prisma.user.update({
+            where: { id },
+            data: updateData,
+        });
+
+        return NextResponse.json(user);
+    } catch (error) {
+        console.error("[PUT /api/users/[id]]", error);
+        return NextResponse.json({ error: "Failed to update staff user" }, { status: 500 });
+    }
+}
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const session = await auth();
+        if (!session || session.user?.role !== "ADMIN") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = await params;
+        await prisma.user.delete({ where: { id } });
+        return new NextResponse(null, { status: 204 });
+    } catch (error) {
+        console.error("[DELETE /api/users/[id]]", error);
+        return NextResponse.json({ error: "Failed to delete staff user" }, { status: 500 });
+    }
+}

@@ -1,10 +1,10 @@
 import { SuggestionForm } from "@/components/suggestions/suggestion-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getCities } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { Lightbulb } from "lucide-react";
 
 export default async function NewSuggestionPage() {
-    const cities = await getCities();
+    const cities = await apiFetch<any[]>("/api/master-data/cities");
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

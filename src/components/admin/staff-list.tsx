@@ -12,14 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, UserPlus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { deleteStaffUser } from "@/actions/users";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface StaffListProps {
     staff: User[];
 }
 
 export function StaffList({ staff }: StaffListProps) {
+    const router = useRouter();
     const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({});
 
     const togglePassword = (id: string) => {
@@ -29,8 +31,9 @@ export function StaffList({ staff }: StaffListProps) {
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this staff account?")) {
             try {
-                await deleteStaffUser(id);
+                await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
                 toast.success("Staff member deleted successfully");
+                router.refresh();
             } catch (error) {
                 toast.error("Failed to delete staff member");
             }

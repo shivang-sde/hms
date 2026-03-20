@@ -98,12 +98,12 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
                         {stats.expiringBookings?.length > 0 ? (
                             <ul className="space-y-4">
                                 {stats.expiringBookings.map((bk: any) => (
-                                    <li key={bk.id} className="flex justify-between items-center text-sm border-b border-amber-500/20 pb-2 last:border-0 last:pb-0">
-                                        <div>
-                                            <p className="font-medium text-amber-900 dark:text-amber-100">{bk.holding.code}</p>
-                                            <p className="text-xs text-muted-foreground">{bk.client.name}</p>
+                                    <li key={bk.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm border-b border-amber-500/20 pb-4 sm:pb-2 last:border-0 last:pb-0">
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-amber-900 dark:text-amber-100 truncate">{bk.holding.code}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{bk.client.name}</p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="flex justify-between items-center sm:text-right sm:block shrink-0">
                                             <p className="font-medium text-amber-900 dark:text-amber-100">{formatDate(bk.endDate)}</p>
                                             <Link href={`/bookings/${bk.id}`} className="text-xs text-amber-600 hover:underline">
                                                 Review
@@ -131,12 +131,12 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
                         {stats.recentBookings?.length > 0 ? (
                             <ul className="space-y-4">
                                 {stats.recentBookings.map((bk: any) => (
-                                    <li key={bk.id} className="flex justify-between items-center text-sm border-b last:border-0 pb-2 last:pb-0">
-                                        <div>
-                                            <p className="font-medium">{bk.client.name}</p>
-                                            <p className="text-xs text-muted-foreground">Booked: {bk.holding.code}</p>
+                                    <li key={bk.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm border-b last:border-0 pb-4 sm:pb-2 last:pb-0">
+                                        <div className="min-w-0">
+                                            <p className="font-medium truncate">{bk.client.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">Booked: {bk.holding.code}</p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="flex justify-between items-center sm:text-right sm:block shrink-0">
                                             <p className="text-xs text-muted-foreground">{formatDate(bk.createdAt)}</p>
                                             <Link href={`/bookings/${bk.id}`} className="text-xs text-primary hover:underline">
                                                 Details

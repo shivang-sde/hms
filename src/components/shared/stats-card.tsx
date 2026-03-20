@@ -39,9 +39,9 @@ export function StatsCard({
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold tracking-tight">{value}</div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight truncate">{value}</div>
                 {description && (
-                    <p className="text-xs text-muted-foreground mt-1">{description}</p>
+                    <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>
                 )}
                 {trend && (
                     <p

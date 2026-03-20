@@ -35,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { invoiceSchema, type InvoiceFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createInvoice, updateInvoice } from "@/actions/finance";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Booking, Client, HsnCode } from "@prisma/client";
 
@@ -166,10 +166,16 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
     const onSubmit = async (data: InvoiceFormData) => {
         try {
             if (initialData) {
-                await updateInvoice(initialData.id, data);
+                await apiFetch(`/api/invoices/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Invoice updated successfully");
             } else {
-                await createInvoice(data);
+                await apiFetch('/api/invoices', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Invoice created successfully");
             }
             router.push("/billing"); // Redirect to Billing Dashboard

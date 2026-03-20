@@ -1,6 +1,8 @@
 "use client";
 
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { getCurrentLocation } from "@/lib/geolocation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -25,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { locationSuggestionSchema, type LocationSuggestionFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createSuggestion, updateSuggestion } from "@/actions/suggestions";
+import { apiFetch } from "@/lib/api";
 import { City } from "@prisma/client";
 
 interface SuggestionFormProps {
@@ -73,13 +75,35 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
         defaultValues: defaultValues as any,
     });
 
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+
+    const fetchCurrentLocation = async () => {
+        setIsFetchingLocation(true);
+        try {
+            const { latitude, longitude } = await getCurrentLocation();
+            form.setValue("latitude", latitude);
+            form.setValue("longitude", longitude);
+            toast.success("Location fetched successfully");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to fetch location");
+        } finally {
+            setIsFetchingLocation(false);
+        }
+    };
+
     const onSubmit = async (data: LocationSuggestionFormData) => {
         try {
             if (initialData) {
-                await updateSuggestion(initialData.id, data);
+                await apiFetch(`/api/suggestions/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Suggestion updated successfully");
             } else {
-                await createSuggestion(data);
+                await apiFetch('/api/suggestions', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Suggestion submitted successfully");
             }
             router.push("/suggestions");
@@ -147,33 +171,80 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
                         )}
                     />
 
-                    <FormField
-                        control={form.control}
-                        name="latitude"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Latitude</FormLabel>
-                                <FormControl>
-                                    <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} value={field.value || ""} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-
-                    <FormField
-                        control={form.control}
-                        name="longitude"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Longitude</FormLabel>
-                                <FormControl>
-                                    <Input type="number" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} value={field.value || ""} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="col-span-1 sm:col-span-2 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Location Coordinates</span>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchCurrentLocation}
+                                disabled={isFetchingLocation}
+                                className="gap-2"
+                            >
+                                {isFetchingLocation ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Fetching...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="3" />
+                                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                                            <path d="m4.22 4.22 2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
+                                        </svg>
+                                        Fetch Current Location
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="latitude"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Latitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                placeholder="Auto-filled from location"
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                className={field.value ? "" : "bg-muted"}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="longitude"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Longitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                placeholder="Auto-filled from location"
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                className={field.value ? "" : "bg-muted"}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
 
                     <FormField
                         control={form.control}

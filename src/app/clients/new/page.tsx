@@ -1,12 +1,10 @@
 import { ClientForm } from "@/components/clients/client-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getCities } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { UserPlus } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 export default async function NewClientPage() {
-    const rawCities = await getCities();
-    const cities = serializePrisma(rawCities);
+    const cities = await apiFetch<any[]>("/api/master-data/cities");
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

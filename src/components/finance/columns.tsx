@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteInvoice, deleteReceipt } from "@/actions/finance";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -55,7 +55,7 @@ function InvoiceActions({ invoice }: { invoice: Invoice }) {
 
     const handleDelete = async () => {
         try {
-            await deleteInvoice(invoice.id);
+            await apiFetch(`/api/invoices/${invoice.id}`, { method: 'DELETE' });
             toast.success("Invoice deleted successfully");
             router.refresh();
         } catch (error) {
@@ -130,7 +130,7 @@ function ReceiptActions({ receipt }: { receipt: Receipt }) {
     const handleDelete = async () => {
         if (!confirm("Deleting a receipt will revert the invoice balance. Continue?")) return;
         try {
-            await deleteReceipt(receipt.id);
+            await apiFetch(`/api/receipts/${receipt.id}`, { method: 'DELETE' });
             toast.success("Receipt deleted & Invoice reverted");
             router.refresh();
         } catch (error) {

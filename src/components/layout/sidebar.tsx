@@ -26,14 +26,17 @@ const navigation = [
     { name: "Master Data", href: "/master-data", icon: Database, roles: ["ADMIN"] },
     { name: "Holdings", href: "/holdings", icon: Building2, roles: ["ADMIN"] },
     { name: "Clients", href: "/clients", icon: Users, roles: ["ADMIN"] },
+    { name: "Ownership Contracts", href: "/ownership-contracts", icon: FileText, roles: ["ADMIN"] },
     { name: "Staff", href: "/admin/staff", icon: Users, roles: ["ADMIN"] },
     { name: "Bookings", href: "/bookings", icon: FileText, roles: ["ADMIN"] },
+    { name: "Advertisements", href: "/advertisements", icon: FileText, roles: ["ADMIN"] },
     { name: "Tasks", href: "/tasks", icon: CheckSquare, roles: ["ADMIN", "STAFF"] },
     { name: "Suggestions", href: "/suggestions", icon: MapPin, roles: ["ADMIN", "STAFF"] },
+
     { name: "Billing", href: "/billing", icon: FileText, roles: ["ADMIN"] },
 ];
 
-export function Sidebar() {
+export function SidebarContent({ className, onLinkClick }: { className?: string; onLinkClick?: () => void }) {
     const pathname = usePathname();
     const { data: session } = useSession();
     const role = session?.user?.role || "STAFF";
@@ -41,8 +44,8 @@ export function Sidebar() {
     const filteredNavigation = navigation.filter(item => item.roles.includes(role));
 
     return (
-        <aside className="fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-border/50 bg-background/80 backdrop-blur-xl transition-all duration-300">
-            <div className="flex h-16 items-center border-b border-border/50 px-6">
+        <div className={cn("flex flex-col h-full", className)}>
+            <div className="flex h-16 items-center px-6 border-b border-border/50">
                 <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                         <MapPinned className="h-5 w-5 text-white" />
@@ -53,7 +56,7 @@ export function Sidebar() {
                 </div>
             </div>
 
-            <div className="h-[calc(100vh-128px)] overflow-y-auto px-3 py-4 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
                 <div className="space-y-1">
                     {filteredNavigation.map((item) => {
                         const isActive =
@@ -65,6 +68,7 @@ export function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={onLinkClick}
                                 className={cn(
                                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                                     isActive
@@ -95,6 +99,14 @@ export function Sidebar() {
                     <span className="text-sm font-medium">Log out</span>
                 </Button>
             </div>
+        </div>
+    );
+}
+
+export function Sidebar({ className }: { className?: string }) {
+    return (
+        <aside className={cn("fixed left-0 top-0 z-40 h-screen w-[260px] border-r border-border/50 bg-background/80 backdrop-blur-xl transition-all duration-300", className)}>
+            <SidebarContent />
         </aside>
     );
 }

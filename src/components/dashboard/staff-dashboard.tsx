@@ -93,29 +93,31 @@ export function StaffDashboard({ stats }: StaffDashboardProps) {
                         {stats.recentTasks?.length > 0 ? (
                             <div className="space-y-4">
                                 {stats.recentTasks.map((task: any) => (
-                                    <div key={task.id} className="group flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:border-indigo-500/30 hover:shadow-md transition-all duration-300">
+                                    <div key={task.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:border-indigo-500/30 hover:shadow-md transition-all duration-300 gap-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                                            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 group-hover:bg-indigo-500 group-hover:text-white transition-colors shrink-0">
                                                 <MapPin className="h-4 w-4" />
                                             </div>
-                                            <div>
-                                                {/* <p className="font-semibold text-sm group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{task.holding.code}</p> */}
-                                                <p className="text-xs text-muted-foreground line-clamp-1">{task.title}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-bold">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
+                                                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-bold whitespace-nowrap">
                                                         {formatEnum(task.taskType)}
                                                     </span>
-                                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground whitespace-nowrap">
                                                         <Calendar className="h-3 w-3" /> {formatDate(task.scheduledDate)}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <Button asChild size="sm" variant="ghost" className="rounded-full h-8 w-8 p-0 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                                            <Link href={`/tasks/${task.id}`}>
-                                                <ArrowRight className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
+                                        <div className="flex justify-end border-t sm:border-t-0 pt-2 sm:pt-0">
+                                            <Button asChild size="sm" variant="ghost" className="rounded-full h-9 px-4 sm:h-8 sm:w-8 sm:p-0 group-hover:bg-indigo-500 group-hover:text-white transition-all w-full sm:w-auto">
+                                                <Link href={`/tasks/${task.id}`}>
+                                                    <span className="sm:hidden mr-2">View Task</span>
+                                                    <ArrowRight className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

@@ -1,18 +1,13 @@
-import { ReceiptForm } from "@/components/finance/receipt-form";
-import { PageHeader } from "@/components/shared/page-header";
-import { getClients } from "@/actions/clients";
-import { getInvoices } from "@/actions/finance";
+import { apiFetch } from "@/lib/api";
 import { Receipt } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
+import { ReceiptForm } from "@/components/finance/receipt-form";
 
 export default async function NewReceiptPage() {
-    const [rawClients, rawInvoices] = await Promise.all([
-        getClients(),
-        getInvoices(),
+    const [clients, invoices] = await Promise.all([
+        apiFetch<any[]>("/api/clients"),
+        apiFetch<any[]>("/api/invoices"),
     ]);
-
-    const clients = serializePrisma(rawClients);
-    const invoices = serializePrisma(rawInvoices);
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

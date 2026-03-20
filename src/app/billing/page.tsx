@@ -1,43 +1,38 @@
-import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { InvoiceListColumns, ReceiptListColumns } from "@/components/finance/columns";
-import { getInvoices, getReceipts } from "@/actions/finance";
+import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Plus, Receipt, FileText } from "lucide-react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { serializePrisma } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
+import { DataTable } from "@/components/shared/data-table";
+import { InvoiceListColumns, ReceiptListColumns } from "@/components/finance/columns";
 
 export default async function BillingPage() {
-    const [rawInvoices, rawReceipts] = await Promise.all([
-        getInvoices(),
-        getReceipts(),
+    const [invoices, receipts] = await Promise.all([
+        apiFetch<any[]>("/api/invoices"),
+        apiFetch<any[]>("/api/receipts"),
     ]);
-
-    const invoices = serializePrisma(rawInvoices);
-    const receipts = serializePrisma(rawReceipts);
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <PageHeader
-                    title="Finance & Billing"
-                    description="Professional invoicing and payment records."
-                    icon={Receipt}
-                />
-                <div className="flex gap-4">
-                    <Button asChild variant="outline">
+            <PageHeader
+                title="Finance & Billing"
+                description="Professional invoicing and payment records."
+                icon={Receipt}
+            >
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button asChild variant="outline" className="w-full sm:w-auto">
                         <Link href="/billing/receipts/new">
                             <Plus className="mr-2 h-4 w-4" /> Record Payment
                         </Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild className="w-full sm:w-auto">
                         <Link href="/billing/invoices/new">
                             <Plus className="mr-2 h-4 w-4" /> Generate Invoice
                         </Link>
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             <Tabs defaultValue="invoices" className="w-full">
                 <TabsList className="mb-4">

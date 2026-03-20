@@ -1,21 +1,14 @@
-import { InvoiceForm } from "@/components/finance/invoice-form";
-import { PageHeader } from "@/components/shared/page-header";
-import { getClients } from "@/actions/clients";
-import { getBookings } from "@/actions/bookings";
-import { getHsnCodes } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { FileText } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
+import { InvoiceForm } from "@/components/finance/invoice-form";
 
 export default async function NewInvoicePage() {
-    const [rawClients, rawBookings, rawHsnCodes] = await Promise.all([
-        getClients(),
-        getBookings(),
-        getHsnCodes(),
+    const [clients, bookings, hsnCodes] = await Promise.all([
+        apiFetch<any[]>("/api/clients"),
+        apiFetch<any[]>("/api/bookings"),
+        apiFetch<any[]>("/api/master-data/hsn-codes"),
     ]);
-
-    const clients = serializePrisma(rawClients);
-    const bookings = serializePrisma(rawBookings);
-    const hsnCodes = serializePrisma(rawHsnCodes);
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

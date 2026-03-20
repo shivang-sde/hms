@@ -33,8 +33,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { holdingTypeSchema, type HoldingTypeFormData } from "@/lib/validations";
-import { createHoldingType, updateHoldingType, deleteHoldingType } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 interface HoldingTypeManagementProps {
@@ -42,6 +43,7 @@ interface HoldingTypeManagementProps {
 }
 
 export function HoldingTypeManagement({ holdingTypes }: HoldingTypeManagementProps) {
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingType, setEditingType] = useState<any | null>(null);
@@ -58,15 +60,22 @@ export function HoldingTypeManagement({ holdingTypes }: HoldingTypeManagementPro
     const onSubmit = async (data: HoldingTypeFormData) => {
         try {
             if (editingType) {
-                await updateHoldingType(editingType.id, data);
+                await apiFetch(`/api/master-data/holding-types/${editingType.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Holding type updated successfully");
             } else {
-                await createHoldingType(data);
+                await apiFetch('/api/master-data/holding-types', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Holding type created successfully");
             }
             setIsDialogOpen(false);
             setEditingType(null);
             form.reset();
+            router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
         }
@@ -85,8 +94,9 @@ export function HoldingTypeManagement({ holdingTypes }: HoldingTypeManagementPro
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this holding type?")) {
             try {
-                await deleteHoldingType(id);
+                await apiFetch(`/api/master-data/holding-types/${id}`, { method: 'DELETE' });
                 toast.success("Holding type deleted successfully");
+                router.refresh();
             } catch (error) {
                 toast.error("Failed to delete holding type");
             }

@@ -32,8 +32,9 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { citySchema, type CityFormData } from "@/lib/validations";
-import { createCity, updateCity, deleteCity } from "@/actions/master-data";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 interface CityManagementProps {
@@ -41,6 +42,7 @@ interface CityManagementProps {
 }
 
 export function CityManagement({ cities }: CityManagementProps) {
+    const router = useRouter();
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingCity, setEditingCity] = useState<any | null>(null);
@@ -58,15 +60,22 @@ export function CityManagement({ cities }: CityManagementProps) {
     const onSubmit = async (data: CityFormData) => {
         try {
             if (editingCity) {
-                await updateCity(editingCity.id, data);
+                await apiFetch(`/api/master-data/cities/${editingCity.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("City updated successfully");
             } else {
-                await createCity(data);
+                await apiFetch('/api/master-data/cities', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("City created successfully");
             }
             setIsDialogOpen(false);
             setEditingCity(null);
             form.reset();
+            router.refresh();
         } catch (error) {
             toast.error("Something went wrong");
         }
@@ -86,8 +95,9 @@ export function CityManagement({ cities }: CityManagementProps) {
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this city?")) {
             try {
-                await deleteCity(id);
+                await apiFetch(`/api/master-data/cities/${id}`, { method: 'DELETE' });
                 toast.success("City deleted successfully");
+                router.refresh();
             } catch (error) {
                 toast.error("Failed to delete city");
             }

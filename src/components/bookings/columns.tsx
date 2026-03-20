@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteBooking } from "@/actions/bookings";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -61,7 +61,7 @@ function BookingActions({ booking }: { booking: Booking }) {
 
     const handleDelete = async () => {
         try {
-            await deleteBooking(booking.id);
+            await apiFetch(`/api/bookings/${booking.id}`, { method: 'DELETE' });
             toast.success("Booking deleted successfully");
             router.refresh();
         } catch (error) {

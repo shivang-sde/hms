@@ -1,9 +1,5 @@
-import { getStaffUsers } from "@/actions/users";
-import { getTask } from "@/actions/tasks";
-import { getHoldings } from "@/actions/holdings";
-import { getAdvertisements } from "@/actions/advertisements";
 import { notFound } from "next/navigation";
-import { serializePrisma } from "@/lib/utils";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pencil } from "lucide-react";
 import { TaskForm } from "@/components/tasks/task-form";
@@ -16,21 +12,26 @@ interface EditTaskPageProps {
 
 export default async function EditTaskPage({ params }: EditTaskPageProps) {
     const { id } = await params;
-    const [rawTask, rawHoldings, rawAdvertisements, rawStaff] = await Promise.all([
-        getTask(id),
-        getHoldings(),
-        getAdvertisements(),
-        getStaffUsers(),
-    ]);
 
-    if (!rawTask) {
+    let task: any;
+    let holdings: any[];
+    let advertisements: any[];
+    let staff: any[];
+
+    try {
+        [task, holdings, advertisements, staff] = await Promise.all([
+            apiFetch<any>(`/api/tasks/${id}`),
+            apiFetch<any[]>("/api/holdings"),
+            apiFetch<any[]>("/api/advertisements"),
+            apiFetch<any[]>("/api/users"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const task = serializePrisma(rawTask);
-    const holdings = serializePrisma(rawHoldings);
-    const advertisements = serializePrisma(rawAdvertisements);
-    const staff = serializePrisma(rawStaff);
+    if (!task) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

@@ -35,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { bookingSchema, type BookingFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createBooking, updateBooking } from "@/actions/bookings";
+import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Client, Holding, Booking, City } from "@prisma/client";
 
@@ -124,10 +124,16 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
     const onSubmit = async (data: BookingFormData) => {
         try {
             if (initialData) {
-                await updateBooking(initialData.id, data);
+                await apiFetch(`/api/bookings/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Booking updated successfully");
             } else {
-                await createBooking(data);
+                await apiFetch('/api/bookings', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Booking created successfully");
             }
             router.push("/bookings");

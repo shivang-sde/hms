@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { deleteAdvertisement } from "@/actions/advertisements";
+import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
@@ -61,7 +61,7 @@ function AdvertisementActions({ advertisement }: { advertisement: Advertisement 
 
     const handleDelete = async () => {
         try {
-            await deleteAdvertisement(advertisement.id);
+            await apiFetch(`/api/advertisements/${advertisement.id}`, { method: 'DELETE' });
             toast.success("Advertisement deleted successfully");
             router.refresh();
         } catch (error) {

@@ -1,21 +1,15 @@
 import { BookingForm } from "@/components/bookings/booking-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getClients } from "@/actions/clients";
-import { getHoldings } from "@/actions/holdings";
+import { apiFetch } from "@/lib/api";
 import { CalendarPlus } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
-import { Holding } from "@prisma/client";
 
 export default async function NewBookingPage() {
-    const [rawClients, rawHoldings] = await Promise.all([
-        getClients(),
-        getHoldings(),
+    const [clients, holdings] = await Promise.all([
+        apiFetch<any[]>("/api/clients"),
+        apiFetch<any[]>("/api/holdings"),
     ]);
 
-    const clients = serializePrisma(rawClients);
-    const holdings = serializePrisma(rawHoldings);
-
-    const availableHoldings = holdings.filter((holding: Holding) => holding.status === "AVAILABLE");
+    const availableHoldings = holdings.filter((holding: any) => holding.status === "AVAILABLE");
 
 
     return (

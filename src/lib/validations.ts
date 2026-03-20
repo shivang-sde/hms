@@ -151,11 +151,11 @@ export type TaskFormData = z.infer<typeof taskSchema>;
 
 export const taskExecutionSchema = z.object({
     taskId: z.string().min(1, "Task ID is required"),
-    status: z.enum(["COMPLETED", "CANCELLED"]).default("COMPLETED"),
+    status: z.enum(["COMPLETED", "CANCELLED"]),
     condition: z.enum(["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"]),
     remarks: z.string().optional(),
-    latitude: z.coerce.number(),
-    longitude: z.coerce.number(),
+    latitude: z.number(),
+    longitude: z.number(),
     frontViewUrl: z.string().min(1, "Front view photo is required"),
     leftViewUrl: z.string().min(1, "Left view photo is required"),
     rightViewUrl: z.string().min(1, "Right view photo is required"),

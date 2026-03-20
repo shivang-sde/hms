@@ -1,13 +1,14 @@
-import { getSuggestion, acceptSuggestion, rejectSuggestion } from "@/actions/suggestions";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatDate, serializePrisma } from "@/lib/utils";
-import { MapPin, Phone, User, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { MapPin, Phone, User, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { SuggestionStatusActions } from "@/components/suggestions/suggestion-status-actions";
 
 interface SuggestionDetailsPageProps {
     params: {
@@ -17,22 +18,16 @@ interface SuggestionDetailsPageProps {
 
 export default async function SuggestionDetailsPage({ params }: SuggestionDetailsPageProps) {
     const { id } = await params;
-    const rawSuggestion = await getSuggestion(id);
 
-    if (!rawSuggestion) {
+    let suggestion: any;
+    try {
+        suggestion = await apiFetch<any>(`/api/location-suggestions/${id}`);
+    } catch (error) {
         notFound();
     }
 
-    const suggestion = serializePrisma(rawSuggestion);
-
-    async function handleAccept() {
-        "use server";
-        await acceptSuggestion(id);
-    }
-
-    async function handleReject() {
-        "use server";
-        await rejectSuggestion(id);
+    if (!suggestion) {
+        notFound();
     }
 
     return (
@@ -46,18 +41,7 @@ export default async function SuggestionDetailsPage({ params }: SuggestionDetail
                 <div className="flex items-center gap-2">
                     <StatusBadge status={suggestion.status} />
                     {suggestion.status === "PENDING" && (
-                        <div className="flex gap-2">
-                            <form action={handleReject}>
-                                <Button variant="destructive" size="sm">
-                                    <XCircle className="mr-2 h-4 w-4" /> Reject
-                                </Button>
-                            </form>
-                            <form action={handleAccept}>
-                                <Button variant="default" size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                    <CheckCircle className="mr-2 h-4 w-4" /> Accept
-                                </Button>
-                            </form>
-                        </div>
+                        <SuggestionStatusActions id={id} />
                     )}
                     {suggestion.status === "ACCEPTED" && (
                         <Button asChild size="sm">

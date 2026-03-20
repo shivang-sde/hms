@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { holdingSchema, type HoldingFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createHolding, updateHolding } from "@/actions/holdings";
+import { apiFetch } from "@/lib/api";
+import { getCurrentLocation } from "@/lib/geolocation";
 import { City, HoldingType, HsnCode, Holding } from "@prisma/client";
 
 interface HoldingFormProps {
@@ -37,6 +38,21 @@ interface HoldingFormProps {
 
 export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFormProps) {
     const router = useRouter();
+    const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+
+    const fetchCurrentLocation = async () => {
+        setIsFetchingLocation(true);
+        try {
+            const { latitude, longitude } = await getCurrentLocation();
+            form.setValue("latitude", latitude);
+            form.setValue("longitude", longitude);
+            toast.success("Location fetched successfully");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to fetch location");
+        } finally {
+            setIsFetchingLocation(false);
+        }
+    };
 
     const defaultValues: Partial<HoldingFormData> = initialData
         ? {
@@ -81,10 +97,16 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
     const onSubmit = async (data: HoldingFormData) => {
         try {
             if (initialData && initialData.id) { // Only update if we have a real ID, not just pre-filled data
-                await updateHolding(initialData.id, data);
+                await apiFetch(`/api/holdings/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Holding updated successfully");
             } else {
-                await createHolding(data);
+                await apiFetch('/api/holdings', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Holding created successfully");
             }
             router.push("/holdings");
@@ -94,6 +116,15 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
             console.error(error);
         }
     };
+
+    // Auto generate code for new holdings
+    useEffect(() => {
+        if (!initialData?.id && !form.getValues("code")) {
+            const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const timeStr = Date.now().toString().slice(-4);
+            form.setValue("code", `HLD-${randomStr}-${timeStr}`);
+        }
+    }, [initialData?.id, form]);
 
     // Calculate area automatically
     const width = form.watch("width");
@@ -119,7 +150,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                             <FormItem>
                                 <FormLabel>Holding Code</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Unique code e.g. HLD-MUM-001" {...field} />
+                                    <Input placeholder="Auto-generated unique code" {...field} readOnly className="bg-muted" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -215,7 +246,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                         )}
                     />
 
-                    <div className="grid grid-cols-3 gap-4 col-span-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 col-span-1 sm:col-span-2">
                         <FormField
                             control={form.control}
                             name="width"
@@ -343,33 +374,79 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                         )}
                     />
 
-                    <div className="grid grid-cols-2 gap-4 col-span-2">
-                        <FormField
-                            control={form.control}
-                            name="latitude"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Latitude</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" {...field} value={field.value || ""} onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="longitude"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Longitude</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" {...field} value={field.value || ""} onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                    <div className="col-span-1 sm:col-span-2 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Location Coordinates</span>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={fetchCurrentLocation}
+                                disabled={isFetchingLocation}
+                                className="gap-2"
+                            >
+                                {isFetchingLocation ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Fetching...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="3" />
+                                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+                                            <path d="m4.22 4.22 2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
+                                        </svg>
+                                        Fetch Current Location
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="latitude"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Latitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                placeholder="Auto-filled from location"
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                className={field.value ? "" : "bg-muted"}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="longitude"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Longitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                placeholder="Auto-filled from location"
+                                                {...field}
+                                                value={field.value ?? ""}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                                className={field.value ? "" : "bg-muted"}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </div>
 
                     <FormField
@@ -401,11 +478,11 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                     />
                 </div>
 
-                <div className="flex justify-end gap-4">
-                    <Button variant="outline" type="button" onClick={() => router.back()}>
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+                    <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">
                         Cancel
                     </Button>
-                    <Button type="submit">
+                    <Button type="submit" className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
                         {initialData && initialData.id ? "Update Holding" : "Create Holding"}
                     </Button>
                 </div>

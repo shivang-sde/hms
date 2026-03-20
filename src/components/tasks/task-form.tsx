@@ -33,7 +33,7 @@ import {
 import { taskSchema, type TaskFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createTask, updateTask } from "@/actions/tasks";
+import { apiFetch } from "@/lib/api";
 import { Holding, Advertisement, User } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -97,10 +97,16 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
     const onSubmit = async (data: TaskFormData) => {
         try {
             if (initialData) {
-                await updateTask(initialData.id, data);
+                await apiFetch(`/api/tasks/${initialData.id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Task updated successfully");
             } else {
-                await createTask(data);
+                await apiFetch('/api/tasks', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
                 toast.success("Task created successfully");
             }
             router.push("/tasks");
@@ -330,11 +336,11 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
                     />
                 </div>
 
-                <div className="flex justify-end gap-4">
-                    <Button variant="outline" type="button" onClick={() => router.back()}>
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+                    <Button variant="outline" type="button" onClick={() => router.back()} className="w-full sm:w-auto">
                         Cancel
                     </Button>
-                    <Button type="submit">
+                    <Button type="submit" className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
                         {initialData ? "Update Task" : "Create Task"}
                     </Button>
                 </div>

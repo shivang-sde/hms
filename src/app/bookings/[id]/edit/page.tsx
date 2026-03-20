@@ -1,11 +1,8 @@
 import { BookingForm } from "@/components/bookings/booking-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getBooking } from "@/actions/bookings";
-import { getClients } from "@/actions/clients";
-import { getHoldings } from "@/actions/holdings";
+import { apiFetch } from "@/lib/api";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 interface EditBookingPageProps {
     params: {
@@ -15,19 +12,24 @@ interface EditBookingPageProps {
 
 export default async function EditBookingPage({ params }: EditBookingPageProps) {
     const { id } = await params;
-    const [rawBooking, rawClients, rawHoldings] = await Promise.all([
-        getBooking(id),
-        getClients(),
-        getHoldings(),
-    ]);
 
-    if (!rawBooking) {
+    let booking: any;
+    let clients: any[];
+    let holdings: any[];
+
+    try {
+        [booking, clients, holdings] = await Promise.all([
+            apiFetch<any>(`/api/bookings/${id}`), // Assuming this exists or works with /api/bookings/[id]
+            apiFetch<any[]>("/api/clients"),
+            apiFetch<any[]>("/api/holdings"),
+        ]);
+    } catch (error) {
         notFound();
     }
 
-    const booking = serializePrisma(rawBooking);
-    const clients = serializePrisma(rawClients);
-    const holdings = serializePrisma(rawHoldings);
+    if (!booking) {
+        notFound();
+    }
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">

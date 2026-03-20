@@ -1,20 +1,20 @@
 import { TaskForm } from "@/components/tasks/task-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { getHoldings } from "@/actions/holdings";
-import { getAdvertisements } from "@/actions/advertisements";
-import { getStaffUsers } from "@/actions/users";
+import { apiFetch } from "@/lib/api";
 import { ClipboardList } from "lucide-react";
-import { serializePrisma } from "@/lib/utils";
 
 export default async function NewTaskPage() {
-    const [rawHoldings, rawAdvertisements, rawStaff] = await Promise.all([
-        getHoldings(),
-        getAdvertisements(),
-        getStaffUsers(),
+    const [holdings, advertisements, staff] = await Promise.all([
+        apiFetch<any[]>("/api/holdings"),
+        apiFetch<any[]>("/api/advertisements"),
+        apiFetch<any[]>("/api/users"),
     ]);
-    const holdings = serializePrisma(rawHoldings);
-    const advertisements = serializePrisma(rawAdvertisements);
-    const staff = serializePrisma(rawStaff);
+
+    // Filter holdings/ads if needed, though they should ideally be filtered in API if possible.
+    // However, the original code had simple filters. Let's keep them if necessary.
+    const activeHoldings = holdings.filter((h: any) => h.status === "AVAILABLE");
+    const activeAds = advertisements.filter((a: any) => a.status === "ACTIVE");
+    const staffMembers = staff.filter((s: any) => s.role === "STAFF");
 
     return (
         <div className="space-y-6 max-w-2xl mx-auto">
@@ -25,9 +25,9 @@ export default async function NewTaskPage() {
             />
             <div className="bg-card rounded-xl border border-border/50 p-6 shadow-sm">
                 <TaskForm
-                    holdings={holdings}
-                    advertisements={advertisements}
-                    staff={staff}
+                    holdings={activeHoldings}
+                    advertisements={activeAds}
+                    staff={staffMembers}
                 />
             </div>
         </div>
