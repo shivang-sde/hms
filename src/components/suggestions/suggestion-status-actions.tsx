@@ -19,7 +19,7 @@ export function SuggestionStatusActions({ id }: SuggestionStatusActionsProps) {
         setIsLoading(true);
         try {
             await apiFetch(`/api/suggestions/${id}/status`, {
-                method: 'PATCH',
+                method: 'PUT',
                 body: JSON.stringify({ status }),
             });
             toast.success(`Suggestion ${status.toLowerCase()} successfully`);

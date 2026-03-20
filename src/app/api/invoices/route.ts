@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { invoiceSchema } from "@/lib/validations";
+import { createInvoiceJournal } from "@/lib/accounting";
 
 export async function GET() {
     try {
@@ -29,6 +30,16 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = invoiceSchema.parse(body);
         const invoice = await prisma.invoice.create({ data: parsed });
+
+        // Auto-create journal entry for non-draft invoices
+        if (parsed.status !== "DRAFT") {
+            try {
+                await createInvoiceJournal(invoice.id);
+            } catch (err) {
+                console.error("Failed to create invoice journal:", err);
+            }
+        }
+
         return NextResponse.json(invoice, { status: 201 });
     } catch (error: any) {
         console.error("[POST /api/invoices]", error);

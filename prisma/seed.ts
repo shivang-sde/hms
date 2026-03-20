@@ -47,6 +47,12 @@ async function main() {
     console.log("  ✅ Users seeded (admin@hms.com / staff@hms.com)");
 
     // ─── Clean Database ────────────────────────────────────────────────────────
+    // Clean accounting tables first (foreign key order)
+    await (prisma as any).journalLine.deleteMany();
+    await (prisma as any).journalEntry.deleteMany();
+    await (prisma as any).payment.deleteMany();
+    await (prisma as any).vendor.deleteMany();
+    await (prisma as any).invoiceItem.deleteMany();
     await prisma.receipt.deleteMany();
     await prisma.invoice.deleteMany();
     await prisma.maintenanceRecord.deleteMany();
@@ -58,6 +64,7 @@ async function main() {
     await prisma.ownershipContract.deleteMany();
     await prisma.holding.deleteMany();
     await prisma.client.deleteMany();
+    await (prisma as any).ledger.deleteMany();
 
 
     // ─── Cities ─────────────────────────────────────────────────────────────────
@@ -139,6 +146,76 @@ async function main() {
         }),
     ]);
     console.log(`  ✅ ${hsnCodes.length} HSN codes seeded`);
+
+    // ─── Chart of Accounts (Ledgers) ────────────────────────────────────────────
+    // ASSET group ledgers
+    const assetsGroup = await (prisma as any).ledger.create({
+        data: { name: "Assets", code: "ASSETS", type: "ASSET", isGroup: true },
+    });
+    const currentAssetsGroup = await (prisma as any).ledger.create({
+        data: { name: "Current Assets", code: "CA", type: "ASSET", isGroup: true, parentId: assetsGroup.id },
+    });
+    const cashLedger = await (prisma as any).ledger.create({
+        data: { name: "Cash in Hand", code: "CASH", type: "ASSET", isCash: true, parentId: currentAssetsGroup.id },
+    });
+    const bankLedger = await (prisma as any).ledger.create({
+        data: { name: "Bank Account (SBI)", code: "BANK-SBI", type: "ASSET", isBank: true, parentId: currentAssetsGroup.id },
+    });
+    const arGroup = await (prisma as any).ledger.create({
+        data: { name: "Accounts Receivable", code: "AR", type: "ASSET", isGroup: true, isReceivable: true, parentId: currentAssetsGroup.id },
+    });
+
+    // LIABILITY group ledgers
+    const liabilitiesGroup = await (prisma as any).ledger.create({
+        data: { name: "Liabilities", code: "LIABILITIES", type: "LIABILITY", isGroup: true },
+    });
+    const currentLiabGroup = await (prisma as any).ledger.create({
+        data: { name: "Current Liabilities", code: "CL", type: "LIABILITY", isGroup: true, parentId: liabilitiesGroup.id },
+    });
+    const apGroup = await (prisma as any).ledger.create({
+        data: { name: "Accounts Payable", code: "AP", type: "LIABILITY", isGroup: true, isPayable: true, parentId: currentLiabGroup.id },
+    });
+    const taxPayablesGroup = await (prisma as any).ledger.create({
+        data: { name: "Tax Payables", code: "TAX-PAY", type: "LIABILITY", isGroup: true, parentId: currentLiabGroup.id },
+    });
+    const cgstPayable = await (prisma as any).ledger.create({
+        data: { name: "CGST Payable", code: "CGST-OUT", type: "LIABILITY", isTaxOutput: true, parentId: taxPayablesGroup.id },
+    });
+    const sgstPayable = await (prisma as any).ledger.create({
+        data: { name: "SGST Payable", code: "SGST-OUT", type: "LIABILITY", isTaxOutput: true, parentId: taxPayablesGroup.id },
+    });
+    const igstPayable = await (prisma as any).ledger.create({
+        data: { name: "IGST Payable", code: "IGST-OUT", type: "LIABILITY", isTaxOutput: true, parentId: taxPayablesGroup.id },
+    });
+
+    // INCOME group ledgers
+    const incomeGroup = await (prisma as any).ledger.create({
+        data: { name: "Income", code: "INCOME", type: "INCOME", isGroup: true },
+    });
+    const revenueLedger = await (prisma as any).ledger.create({
+        data: { name: "Advertising Revenue", code: "REV-ADV", type: "INCOME", isRevenue: true, parentId: incomeGroup.id },
+    });
+
+    // EXPENSE group ledgers
+    const expenseGroup = await (prisma as any).ledger.create({
+        data: { name: "Expenses", code: "EXPENSES", type: "EXPENSE", isGroup: true },
+    });
+    await (prisma as any).ledger.create({
+        data: { name: "Rent Expense", code: "EXP-RENT", type: "EXPENSE", parentId: expenseGroup.id },
+    });
+    await (prisma as any).ledger.create({
+        data: { name: "Maintenance Expense", code: "EXP-MAINT", type: "EXPENSE", parentId: expenseGroup.id },
+    });
+
+    // EQUITY group ledgers
+    const equityGroup = await (prisma as any).ledger.create({
+        data: { name: "Equity", code: "EQUITY", type: "EQUITY", isGroup: true },
+    });
+    await (prisma as any).ledger.create({
+        data: { name: "Capital Account", code: "CAPITAL", type: "EQUITY", parentId: equityGroup.id },
+    });
+
+    console.log("  ✅ Chart of Accounts seeded (20+ ledgers)");
 
     // ─── Holdings ───────────────────────────────────────────────────────────────
     const holdings = await Promise.all([
@@ -293,7 +370,70 @@ async function main() {
     ]);
     console.log(`  ✅ ${contracts.length} ownership contracts seeded`);
 
+    // ─── Vendors (linked to ownership contracts) ────────────────────────────────
+    // Create individual AP ledgers per vendor
+    const apMmrda = await (prisma as any).ledger.create({
+        data: { name: "MMRDA - Payable", code: "AP-MMRDA", type: "LIABILITY", isPayable: true, parentId: apGroup.id },
+    });
+    const apPmc = await (prisma as any).ledger.create({
+        data: { name: "PMC - Payable", code: "AP-PMC", type: "LIABILITY", isPayable: true, parentId: apGroup.id },
+    });
+    const apSharma = await (prisma as any).ledger.create({
+        data: { name: "Sharma Properties - Payable", code: "AP-SHARMA", type: "LIABILITY", isPayable: true, parentId: apGroup.id },
+    });
+
+    const vendors = await Promise.all([
+        (prisma as any).vendor.create({
+            data: {
+                name: "MMRDA",
+                contactPerson: "Mr. Anil Deshmukh",
+                phone: "+91 22 2659 6000",
+                email: "mmrda@gov.in",
+                address: "Bandra-Kurla Complex, Mumbai",
+                ledgerId: apMmrda.id,
+                ownershipContractId: contracts[0].id,
+                cityId: cities[0].id,
+            },
+        }),
+        (prisma as any).vendor.create({
+            data: {
+                name: "PMC",
+                contactPerson: "Ms. Sunita Pawar",
+                phone: "+91 20 2550 0000",
+                email: "pmc@pune.gov.in",
+                address: "Shivajinagar, Pune",
+                ledgerId: apPmc.id,
+                ownershipContractId: contracts[1].id,
+                cityId: cities[1].id,
+            },
+        }),
+        (prisma as any).vendor.create({
+            data: {
+                name: "Sharma Properties Pvt. Ltd.",
+                contactPerson: "Mr. Vinod Sharma",
+                phone: "+91 98765 43210",
+                email: "info@sharmaproperties.com",
+                address: "FC Road, Pune",
+                ledgerId: apSharma.id,
+                ownershipContractId: contracts[2].id,
+                cityId: cities[1].id,
+            },
+        }),
+    ]);
+    console.log(`  ✅ ${vendors.length} vendors seeded`);
+
     // ─── Clients ────────────────────────────────────────────────────────────────
+    // Create individual AR ledgers per client
+    const arTata = await (prisma as any).ledger.create({
+        data: { name: "Tata Motors - Receivable", code: "AR-TATA", type: "ASSET", isReceivable: true, parentId: arGroup.id },
+    });
+    const arReliance = await (prisma as any).ledger.create({
+        data: { name: "Reliance Industries - Receivable", code: "AR-RIL", type: "ASSET", isReceivable: true, parentId: arGroup.id },
+    });
+    const arInfosys = await (prisma as any).ledger.create({
+        data: { name: "Infosys Technologies - Receivable", code: "AR-INFY", type: "ASSET", isReceivable: true, parentId: arGroup.id },
+    });
+
     const clients = await Promise.all([
         prisma.client.create({
             data: {
@@ -305,6 +445,7 @@ async function main() {
                 panNumber: "AAACT2727Q",
                 address: "Bombay House, Mumbai",
                 cityId: cities[0].id,
+                ledgerId: arTata.id,
             },
         }),
         prisma.client.create({
@@ -317,6 +458,7 @@ async function main() {
                 panNumber: "AAACR5055K",
                 address: "Maker Chambers IV, Nariman Point",
                 cityId: cities[0].id,
+                ledgerId: arReliance.id,
             },
         }),
         prisma.client.create({
@@ -329,6 +471,7 @@ async function main() {
                 panNumber: "AABCI1102R",
                 address: "Electronics City, Pune Office",
                 cityId: cities[1].id,
+                ledgerId: arInfosys.id,
             },
         }),
     ]);

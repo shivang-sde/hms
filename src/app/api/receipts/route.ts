@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { receiptSchema } from "@/lib/validations";
+import { createReceiptJournal } from "@/lib/accounting";
 
 export async function GET() {
     try {
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
 
         const receipt = await prisma.$transaction(async (tx) => {
             // 1. Create Receipt
-            const newReceipt = await tx.receipt.create({ data: parsed });
+            const newReceipt = await tx.receipt.create({ data: parsed as any });
 
             // 2. Update Invoice Paid Amount & Status
             const invoice = await tx.invoice.findUnique({ where: { id: parsed.invoiceId } });
@@ -55,6 +56,15 @@ export async function POST(request: NextRequest) {
 
             return newReceipt;
         });
+
+        // Auto-create journal entry if cash/bank ledger was provided
+        if ((parsed as any).cashBankLedgerId) {
+            try {
+                await createReceiptJournal(receipt.id);
+            } catch (err) {
+                console.error("Failed to create receipt journal:", err);
+            }
+        }
 
         return NextResponse.json(receipt, { status: 201 });
     } catch (error: any) {

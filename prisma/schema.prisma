@@ -19,6 +19,7 @@ model City {
 
   holdings Holding[]
   clients  Client[]
+  vendors  Vendor[]
   locationSuggestions LocationSuggestion[]
 
   @@unique([name, state])
@@ -47,8 +48,9 @@ model HsnCode {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  holdings Holding[]
-  invoices Invoice[]
+  holdings     Holding[]
+  invoices     Invoice[]
+  invoiceItems InvoiceItem[]
 
   @@map("hsn_codes")
 }
@@ -126,6 +128,8 @@ model OwnershipContract {
   holdingId String
   holding   Holding @relation(fields: [holdingId], references: [id])
 
+  vendors   Vendor[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -166,8 +170,10 @@ model Client {
   address       String
   isActive      Boolean  @default(true)
 
-  cityId String?
-  city   City?   @relation(fields: [cityId], references: [id])
+  cityId   String?
+  city     City?   @relation(fields: [cityId], references: [id])
+  ledgerId String?
+  ledger   Ledger? @relation(fields: [ledgerId], references: [id])
 
   bookings Booking[]
   invoices Invoice[]
@@ -453,20 +459,43 @@ model Invoice {
   status          InvoiceStatus @default(DRAFT)
   notes           String?
 
-  clientId  String
-  bookingId String
-  hsnCodeId String
+  clientId       String
+  bookingId      String
+  hsnCodeId      String
+  journalEntryId String?
 
-  client  Client  @relation(fields: [clientId], references: [id])
-  booking Booking @relation(fields: [bookingId], references: [id])
-  hsnCode HsnCode @relation(fields: [hsnCodeId], references: [id])
+  client       Client        @relation(fields: [clientId], references: [id])
+  booking      Booking       @relation(fields: [bookingId], references: [id])
+  hsnCode      HsnCode       @relation(fields: [hsnCodeId], references: [id])
+  journalEntry JournalEntry? @relation(fields: [journalEntryId], references: [id])
 
   receipts Receipt[]
+  items    InvoiceItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  hsnCodeId   String
+  hsnCode     HsnCode  @relation(fields: [hsnCodeId], references: [id])
+  quantity    Decimal  @db.Decimal(10, 2)
+  rate        Decimal  @db.Decimal(12, 2)
+  amount      Decimal  @db.Decimal(12, 2)
+  gstRate     Decimal  @db.Decimal(5, 2)
+  gstAmount   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("invoice_items")
 }
 
 enum InvoiceStatus {
@@ -489,11 +518,15 @@ model Receipt {
   referenceNo   String?
   notes         String?
 
-  clientId  String
-  invoiceId String
+  clientId         String
+  invoiceId        String
+  journalEntryId   String?
+  cashBankLedgerId String?
 
-  client  Client  @relation(fields: [clientId], references: [id])
-  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  client         Client        @relation(fields: [clientId], references: [id])
+  invoice        Invoice       @relation(fields: [invoiceId], references: [id])
+  journalEntry   JournalEntry? @relation(fields: [journalEntryId], references: [id])
+  cashBankLedger Ledger?       @relation("ReceiptCashBankLedger", fields: [cashBankLedgerId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -509,6 +542,148 @@ enum PaymentMode {
   UPI
   CARD
   OTHER
+}
+
+// ─── Accounting: Ledger (Chart of Accounts) ─────────────────────────────────────
+
+model Ledger {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  code        String     @unique
+  type        LedgerType
+  isGroup     Boolean    @default(false)
+  parentId    String?
+  parent      Ledger?    @relation("LedgerParent", fields: [parentId], references: [id])
+  children    Ledger[]   @relation("LedgerParent")
+
+  // Auto-posting flags
+  isCash       Boolean @default(false)
+  isBank       Boolean @default(false)
+  isReceivable Boolean @default(false)
+  isPayable    Boolean @default(false)
+  isRevenue    Boolean @default(false)
+  isTaxOutput  Boolean @default(false)
+  isTaxInput   Boolean @default(false)
+
+  journalLines         JournalLine[]
+  clients              Client[]
+  vendors              Vendor[]       @relation("VendorLedger")
+  receiptCashBank      Receipt[]      @relation("ReceiptCashBankLedger")
+  paymentCashBank      Payment[]      @relation("PaymentCashBankLedger")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ledgers")
+}
+
+enum LedgerType {
+  ASSET
+  LIABILITY
+  INCOME
+  EXPENSE
+  EQUITY
+}
+
+// ─── Accounting: Journal Entries ─────────────────────────────────────────────────
+
+model JournalEntry {
+  id          String        @id @default(cuid())
+  entryNumber String        @unique
+  entryDate   DateTime
+  description String?
+  source      JournalSource
+  sourceId    String?
+  status      JournalStatus @default(DRAFT)
+
+  lines    JournalLine[]
+  invoices Invoice[]
+  receipts Receipt[]
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("journal_entries")
+}
+
+model JournalLine {
+  id          String       @id @default(cuid())
+  journalId   String
+  journal     JournalEntry @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  ledgerId    String
+  ledger      Ledger       @relation(fields: [ledgerId], references: [id])
+  debit       Decimal?     @db.Decimal(12, 2)
+  credit      Decimal?     @db.Decimal(12, 2)
+  description String?
+
+  @@map("journal_lines")
+}
+
+enum JournalSource {
+  INVOICE
+  RECEIPT
+  PAYMENT
+  MANUAL
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  VOID
+}
+
+// ─── Accounting: Vendors ─────────────────────────────────────────────────────────
+
+model Vendor {
+  id            String   @id @default(cuid())
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String
+  gstNumber     String?
+  panNumber     String?
+  address       String
+  isActive      Boolean  @default(true)
+
+  ownershipContractId String?
+  ownershipContract   OwnershipContract? @relation(fields: [ownershipContractId], references: [id])
+
+  cityId   String?
+  city     City?   @relation(fields: [cityId], references: [id])
+  ledgerId String
+  ledger   Ledger  @relation("VendorLedger", fields: [ledgerId], references: [id])
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vendors")
+}
+
+// ─── Accounting: Vendor Payments ─────────────────────────────────────────────────
+
+model Payment {
+  id             String      @id @default(cuid())
+  paymentNumber  String      @unique
+  paymentDate    DateTime
+  amount         Decimal     @db.Decimal(12, 2)
+  paymentMode    PaymentMode
+  referenceNo    String?
+  notes          String?
+
+  vendorId         String
+  vendor           Vendor       @relation(fields: [vendorId], references: [id])
+  cashBankLedgerId String
+  cashBankLedger   Ledger       @relation("PaymentCashBankLedger", fields: [cashBankLedgerId], references: [id])
+  journalEntryId   String?
+  journalEntry     JournalEntry? @relation(fields: [journalEntryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("payments")
 }
 
 // ─── Location Suggestions ──────────────────────────────────────────────────────

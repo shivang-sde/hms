@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         const suggestion = await prisma.locationSuggestion.create({
             data: {
                 ...parsed,
-                photos: [],
+                photos: parsed.photos || [],
             },
         });
 

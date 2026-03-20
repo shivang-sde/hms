@@ -211,7 +211,7 @@ export const locationSuggestionSchema = z.object({
     longitude: z.coerce.number().optional(),
     landmark: z.string().optional(),
     description: z.string().optional(),
-    // photos: z.array(z.string().url()).optional(), // Keeping simple string for now if needed or omit
+    photos: z.array(z.string()).optional().default([]),
     proposedRent: z.coerce.number().positive().optional(),
     ownerName: z.string().optional(),
     ownerPhone: z.string().optional(),
@@ -219,3 +219,88 @@ export const locationSuggestionSchema = z.object({
 });
 
 export type LocationSuggestionFormData = z.infer<typeof locationSuggestionSchema>;
+
+// ─── Ledger Schemas ───────────────────────────────────────────────────────────
+
+export const ledgerSchema = z.object({
+    name: z.string().min(1, "Ledger name is required"),
+    code: z.string().min(1, "Ledger code is required"),
+    type: z.enum(["ASSET", "LIABILITY", "INCOME", "EXPENSE", "EQUITY"]),
+    isGroup: z.boolean().default(false),
+    parentId: z.string().optional().nullable(),
+    isCash: z.boolean().default(false),
+    isBank: z.boolean().default(false),
+    isReceivable: z.boolean().default(false),
+    isPayable: z.boolean().default(false),
+    isRevenue: z.boolean().default(false),
+    isTaxOutput: z.boolean().default(false),
+    isTaxInput: z.boolean().default(false),
+});
+
+export type LedgerFormData = z.infer<typeof ledgerSchema>;
+
+// ─── Vendor Schemas ───────────────────────────────────────────────────────────
+
+export const vendorSchema = z.object({
+    name: z.string().min(1, "Vendor name is required"),
+    contactPerson: z.string().optional(),
+    email: z.string().email("Invalid email").optional().or(z.literal("")),
+    phone: z.string().min(1, "Phone is required"),
+    gstNumber: z.string().optional(),
+    panNumber: z.string().optional(),
+    address: z.string().min(1, "Address is required"),
+    isActive: z.boolean().default(true),
+    ownershipContractId: z.string().optional().nullable(),
+    cityId: z.string().optional().nullable(),
+    ledgerId: z.string().min(1, "Accounts Payable ledger is required"),
+});
+
+export type VendorFormData = z.infer<typeof vendorSchema>;
+
+// ─── Payment Schemas ──────────────────────────────────────────────────────────
+
+export const paymentSchema = z.object({
+    paymentNumber: z.string().min(1, "Payment number is required"),
+    paymentDate: z.coerce.date(),
+    amount: z.coerce.number().positive("Amount must be positive"),
+    paymentMode: z.enum(["CASH", "CHEQUE", "NEFT", "RTGS", "UPI", "CARD", "OTHER"]),
+    referenceNo: z.string().optional(),
+    notes: z.string().optional(),
+    vendorId: z.string().min(1, "Vendor is required"),
+    cashBankLedgerId: z.string().min(1, "Cash/Bank ledger is required"),
+});
+
+export type PaymentFormData = z.infer<typeof paymentSchema>;
+
+// ─── Journal Entry Schemas ────────────────────────────────────────────────────
+
+export const journalLineSchema = z.object({
+    ledgerId: z.string().min(1, "Ledger is required"),
+    debit: z.coerce.number().min(0).optional().nullable(),
+    credit: z.coerce.number().min(0).optional().nullable(),
+    description: z.string().optional(),
+});
+
+export const journalEntrySchema = z.object({
+    entryDate: z.coerce.date(),
+    description: z.string().optional(),
+    lines: z.array(journalLineSchema).min(2, "At least 2 lines required"),
+});
+
+export type JournalEntryFormData = z.infer<typeof journalEntrySchema>;
+export type JournalLineFormData = z.infer<typeof journalLineSchema>;
+
+// ─── Invoice Item Schemas ─────────────────────────────────────────────────────
+
+export const invoiceItemSchema = z.object({
+    description: z.string().min(1, "Description is required"),
+    hsnCodeId: z.string().min(1, "HSN Code is required"),
+    quantity: z.coerce.number().positive(),
+    rate: z.coerce.number().positive(),
+    amount: z.coerce.number().min(0),
+    gstRate: z.coerce.number().min(0),
+    gstAmount: z.coerce.number().min(0),
+    total: z.coerce.number().min(0),
+});
+
+export type InvoiceItemFormData = z.infer<typeof invoiceItemSchema>;

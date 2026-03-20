@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { City } from "@prisma/client";
+import { MultiPhotoUpload } from "@/components/shared/multi-photo-upload";
 
 interface SuggestionFormProps {
     initialData?: {
@@ -36,6 +37,7 @@ interface SuggestionFormProps {
         address: string;
         cityId: string;
         description: string | null;
+        photos: string[];
         latitude: any;
         longitude: any;
         landmark: string | null;
@@ -55,6 +57,7 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
             address: initialData.address,
             cityId: initialData.cityId,
             description: initialData.description || undefined,
+            photos: initialData.photos || [],
             latitude: initialData.latitude ? Number(initialData.latitude) : undefined,
             longitude: initialData.longitude ? Number(initialData.longitude) : undefined,
             landmark: initialData.landmark || undefined,
@@ -66,6 +69,7 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
         : {
             address: "",
             cityId: "",
+            photos: [],
             status: "PENDING",
             proposedRent: 0,
         };
@@ -270,6 +274,25 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
                                     <Textarea placeholder="High visibility area, owner interested..." {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="photos"
+                        render={({ field }) => (
+                            <FormItem className="col-span-2 mt-2">
+                                <FormControl>
+                                    <MultiPhotoUpload
+                                        label="Location Photos"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        maxFiles={5}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>Upload up to 5 photos showing the location visibility and context.</FormDescription>
                             </FormItem>
                         )}
                     />

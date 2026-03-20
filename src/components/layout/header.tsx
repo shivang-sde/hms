@@ -53,7 +53,7 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-1 md:gap-2">
-                <Button
+                {/* <Button
                     variant="ghost"
                     size="icon"
                     className="relative"
@@ -62,7 +62,7 @@ export function Header() {
                     <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-red-500 text-[9px] text-white flex items-center justify-center font-bold">
                         3
                     </span>
-                </Button>
+                </Button> */}
 
                 <Button
                     variant="ghost"

@@ -9,6 +9,7 @@ import { MapPin, Phone, User, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { SuggestionStatusActions } from "@/components/suggestions/suggestion-status-actions";
+import { PhotoGallery } from "@/components/shared/photo-gallery";
 
 interface SuggestionDetailsPageProps {
     params: {
@@ -115,6 +116,17 @@ export default async function SuggestionDetailsPage({ params }: SuggestionDetail
                     </CardContent>
                 </Card>
             </div>
+
+            {suggestion.photos && suggestion.photos.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base">Location Photos</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <PhotoGallery photos={suggestion.photos} />
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }

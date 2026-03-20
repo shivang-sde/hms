@@ -1,0 +1,19 @@
+import { apiFetch } from "@/lib/api";
+import { PageHeader } from "@/components/shared/page-header";
+import { JournalEntryForm } from "@/components/accounting/journal-entry-form";
+
+export default async function NewJournalEntryPage() {
+    const ledgers = await apiFetch<any[]>("/api/accounting/ledgers");
+
+    return (
+        <div className="space-y-6">
+            <PageHeader
+                title="New Journal Entry"
+                description="Create a manual double-entry journal transaction"
+            />
+            <div className="bg-card rounded-xl border shadow-sm p-6">
+                <JournalEntryForm ledgers={ledgers} />
+            </div>
+        </div>
+    );
+}

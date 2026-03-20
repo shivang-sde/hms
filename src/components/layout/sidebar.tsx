@@ -15,7 +15,12 @@ import {
     MapPinned,
     CheckSquare,
     Database,
-    LogOut
+    LogOut,
+    BookOpen,
+    Wallet,
+    BarChart3,
+    Layers,
+    CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,7 +29,7 @@ import { logout } from "@/actions/auth";
 const navigation = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
     { name: "Master Data", href: "/master-data", icon: Database, roles: ["ADMIN"] },
-    { name: "Holdings", href: "/holdings", icon: Building2, roles: ["ADMIN"] },
+    { name: "Hoardings", href: "/holdings", icon: Building2, roles: ["ADMIN"] },
     { name: "Clients", href: "/clients", icon: Users, roles: ["ADMIN"] },
     { name: "Ownership Contracts", href: "/ownership-contracts", icon: FileText, roles: ["ADMIN"] },
     { name: "Staff", href: "/admin/staff", icon: Users, roles: ["ADMIN"] },
@@ -32,8 +37,12 @@ const navigation = [
     { name: "Advertisements", href: "/advertisements", icon: FileText, roles: ["ADMIN"] },
     { name: "Tasks", href: "/tasks", icon: CheckSquare, roles: ["ADMIN", "STAFF"] },
     { name: "Suggestions", href: "/suggestions", icon: MapPin, roles: ["ADMIN", "STAFF"] },
-
     { name: "Billing", href: "/billing", icon: FileText, roles: ["ADMIN"] },
+    { name: "Ledgers", href: "/master-data/ledgers", icon: Layers, roles: ["ADMIN"] },
+    { name: "Vendors", href: "/master-data/vendors", icon: Building2, roles: ["ADMIN"] },
+    { name: "Journal Entries", href: "/accounting/journal-entries", icon: BookOpen, roles: ["ADMIN"] },
+    { name: "Payments", href: "/accounting/payments", icon: CreditCard, roles: ["ADMIN"] },
+    { name: "Reports", href: "/reports/trial-balance", icon: BarChart3, roles: ["ADMIN"] },
 ];
 
 export function SidebarContent({ className, onLinkClick }: { className?: string; onLinkClick?: () => void }) {
