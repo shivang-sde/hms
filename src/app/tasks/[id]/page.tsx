@@ -35,6 +35,7 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
     let task: any;
     try {
         task = await apiFetch<any>(`/api/tasks/${id}`);
+        console.log(task);
     } catch (error) {
         notFound();
     }

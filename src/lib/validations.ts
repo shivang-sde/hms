@@ -213,7 +213,7 @@ export const locationSuggestionSchema = z.object({
     landmark: z.string().optional(),
     description: z.string().optional(),
     photos: z.array(z.string()).optional().default([]),
-    proposedRent: z.coerce.number().positive().optional(),
+    proposedRent: z.number().optional(),
     ownerName: z.string().optional(),
     ownerPhone: z.string().optional(),
     status: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).default("PENDING"),

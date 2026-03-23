@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X, UploadCloud, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface MultiPhotoUploadProps {
     label: string;
@@ -25,24 +26,35 @@ export function MultiPhotoUpload({ label, value = [], onChange, error, maxFiles 
         const filesToProcess = files.slice(0, remainingSlots);
 
         setIsUploading(true);
-        const promises = filesToProcess.map((file) => {
-            return new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    resolve(reader.result as string);
-                };
-                reader.readAsDataURL(file);
+        const promises = filesToProcess.map(async (file) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            const response = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
             });
+            if (!response.ok) {
+                throw new Error("Upload failed");
+            }
+            const data = await response.json();
+            return data.url;
         });
 
-        Promise.all(promises).then((base64Strings) => {
-            const newValues = [...value, ...base64Strings];
-            onChange(newValues);
-            setIsUploading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
-        });
+        Promise.all(promises)
+            .then((urls) => {
+                const newValues = [...value, ...urls];
+                onChange(newValues);
+            })
+            .catch((err) => {
+                console.error("Upload error:", err);
+                toast.error("Failed to upload one or more photos.");
+            })
+            .finally(() => {
+                setIsUploading(false);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
+            });
     };
 
     const removePhoto = (index: number) => {

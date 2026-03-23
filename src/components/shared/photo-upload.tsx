@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, X, UploadCloud, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface PhotoUploadProps {
     label: string;
@@ -16,22 +17,34 @@ export function PhotoUpload({ label, value, onChange, error }: PhotoUploadProps)
     const [preview, setPreview] = useState<string | null>(value || null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             setIsUploading(true);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setPreview(base64String);
-                onChange(base64String);
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const response = await fetch("/api/upload", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to upload file");
+                }
+
+                const data = await response.json();
+                setPreview(data.url);
+                onChange(data.url);
+            } catch (err) {
+                console.error("Upload error:", err);
+                toast.error("Failed to upload photo.");
+            } finally {
                 setIsUploading(false);
-            };
-            reader.readAsDataURL(file);
+            }
         }
     };
-
     const removePhoto = () => {
         setPreview(null);
         onChange("");

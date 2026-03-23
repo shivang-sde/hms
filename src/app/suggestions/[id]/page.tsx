@@ -31,6 +31,7 @@ export default async function SuggestionDetailsPage({ params }: SuggestionDetail
         notFound();
     }
 
+    console.log(suggestion);
     return (
         <div className="space-y-6 max-w-4xl mx-auto">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
