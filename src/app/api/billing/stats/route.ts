@@ -7,10 +7,10 @@ export async function GET() {
             select: { totalAmount: true, paidAmount: true, status: true },
         });
 
-        const totalBilled = invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-        const totalCollected = invoices.reduce((sum, inv) => sum + Number(inv.paidAmount), 0);
+        const totalBilled = invoices.reduce((sum: number, inv: any) => sum + Number(inv.totalAmount), 0);
+        const totalCollected = invoices.reduce((sum: number, inv: any) => sum + Number(inv.paidAmount), 0);
         const outstanding = totalBilled - totalCollected;
-        const overdueCount = invoices.filter((inv) => inv.status === "OVERDUE").length;
+        const overdueCount = invoices.filter((inv: any) => inv.status === "OVERDUE").length;
 
         return NextResponse.json({ totalBilled, totalCollected, outstanding, overdueCount });
     } catch (error) {
