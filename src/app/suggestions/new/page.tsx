@@ -3,6 +3,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { Lightbulb } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewSuggestionPage() {
     const cities = await apiFetch<any[]>("/api/master-data/cities");
 

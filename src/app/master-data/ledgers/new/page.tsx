@@ -2,6 +2,10 @@ import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { LedgerForm } from "@/components/accounting/ledger-form";
 
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewLedgerPage() {
     const ledgers = await apiFetch<any[]>("/api/accounting/ledgers");
 

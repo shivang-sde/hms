@@ -3,6 +3,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { PlusCircle } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewContractPage() {
     const holdings = await apiFetch<any[]>("/api/holdings");
 

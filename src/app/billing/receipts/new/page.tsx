@@ -4,6 +4,10 @@ import { PageHeader } from "@/components/shared/page-header";
 import { ReceiptForm } from "@/components/finance/receipt-form";
 import { prisma } from "@/lib/db";
 
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewReceiptPage() {
     const [clients, invoices] = await Promise.all([
         apiFetch<any[]>("/api/clients"),

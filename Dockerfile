@@ -1,75 +1,70 @@
-# Stage 1: Dependencies (with caching optimization)
+# -------- Stage 1: Install dependencies --------
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files for dependency installation
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production
-
-# Stage 2: Development Dependencies (for building)
-FROM node:20-alpine AS dev-deps
+# Install required system packages
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
 
-# Copy package files and install ALL dependencies (including dev)
+# Copy only package files (for better caching)
 COPY package.json package-lock.json* ./
+
+# Install all dependencies (needed for build)
 RUN npm ci
 
-# Stage 3: Builder
+
+# -------- Stage 2: Build the app --------
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy source and dependencies
-COPY --from=dev-deps /app/node_modules ./node_modules
+RUN apk add --no-cache libc6-compat
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
 COPY . .
 
-# Build the Next.js application
-RUN npm run build
+# Build Next.js (standalone)
+RUN npm run build && \
+    test -d .next/standalone && \
+    test -f .next/standalone/server.js
 
-# Stage 4: Runner (final production image)
+
+# -------- Stage 3: Production runner --------
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Install dumb-init and other runtime dependencies
+# Install minimal runtime deps
 RUN apk add --no-cache dumb-init libc6-compat
 
-# Set environment
+# Environment variables
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application
+# Copy only necessary files from builder
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy production dependencies only
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy package.json for reference (optional)
-COPY --from=builder /app/package.json ./package.json
-
-# Fix permissions
+# Set correct permissions
 RUN chown -R nextjs:nodejs /app
 
 # Switch to non-root user
 USER nextjs
 
-# Expose port
+# Expose app port
 EXPOSE 3000
 
-# Environment variables for Next.js
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# Health check
+# Healthcheck (basic HTTP check)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD node -e "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" || exit 1
+    CMD node -e "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# Start with dumb-init
+# Fail-fast + start app
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "test -f server.js || (echo 'ERROR: server.js not found. Ensure Next.js standalone build is enabled.' && exit 1); node server.js"]

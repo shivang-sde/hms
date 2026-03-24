@@ -3,6 +3,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { ClipboardList } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewTaskPage() {
     const [holdings, advertisements, staff] = await Promise.all([
         apiFetch<any[]>("/api/holdings"),

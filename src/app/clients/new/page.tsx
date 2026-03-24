@@ -3,6 +3,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { apiFetch } from "@/lib/api";
 import { UserPlus } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewClientPage() {
     const cities = await apiFetch<any[]>("/api/master-data/cities");
 

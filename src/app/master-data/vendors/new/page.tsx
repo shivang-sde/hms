@@ -2,6 +2,10 @@ import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
 import { VendorForm } from "@/components/accounting/vendor-form";
 
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NewVendorPage() {
     const [cities, ledgers, contracts] = await Promise.all([
         apiFetch<any[]>("/api/master-data/cities"),
