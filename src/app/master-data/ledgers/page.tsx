@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Plus, ChevronRight, Layers, Building2, Wallet, TrendingUp, Receipt, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+type LedgerFlag =
+    | "Cash"
+    | "Bank"
+    | "AR"
+    | "AP"
+    | "Revenue"
+    | "Tax Out"
+    | "Tax In";
+
+const flags: LedgerFlag[] = [];
+
 const typeIcons: Record<string, any> = {
     ASSET: Wallet,
     LIABILITY: FileText,
@@ -26,7 +37,7 @@ function LedgerNode({ ledger, allLedgers }: { ledger: any; allLedgers: any[] }) 
     const hasChildren = children.length > 0;
     const Icon = typeIcons[ledger.type] || Layers;
 
-    const flags = [];
+    const flags: LedgerFlag[] = [];
     if (ledger.isCash) flags.push("Cash");
     if (ledger.isBank) flags.push("Bank");
     if (ledger.isReceivable) flags.push("AR");

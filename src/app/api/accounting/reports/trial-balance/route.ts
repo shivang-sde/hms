@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        const trialBalanceRows = [];
+        const trialBalanceRows: TrialBalanceRow[] = [];
 
         let totalDebit = 0;
         let totalCredit = 0;
