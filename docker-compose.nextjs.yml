@@ -33,7 +33,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hms-app
     restart: unless-stopped
     expose:
       - "3000"
