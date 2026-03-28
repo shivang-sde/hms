@@ -16,11 +16,12 @@ export async function POST(req: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const uploadDir = path.join(process.cwd(), "uploads");
-        
-        if (!fs.existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true });
-        }
+        const uploadDir = path.join(process.cwd(), "public", "uploads");
+        await mkdir(uploadDir, { recursive: true });
+
+        // if (!fs.existsSync(uploadDir)) {
+        //     await mkdir(uploadDir, { recursive: true });
+        // }
 
         const ext = file.name.split(".").pop() || "bin";
         const filename = `${randomUUID()}.${ext}`;
@@ -28,11 +29,7 @@ export async function POST(req: NextRequest) {
 
         await writeFile(filePath, buffer);
 
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "http://localhost:3000";
-        // Remove trailing slash if present
-        const sanitizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-        
-        const fileUrl = `${sanitizedBaseUrl}/api/uploads/${filename}`;
+        const fileUrl = `/uploads/${filename}`;
 
         return NextResponse.json({ url: fileUrl });
     } catch (error) {

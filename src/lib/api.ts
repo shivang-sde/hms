@@ -10,8 +10,14 @@ export async function apiFetch<T = unknown>(
         finalUrl = `${baseUrl}${url}`;
     }
 
-    const headers = new Headers(options?.headers);
-    headers.set("Content-Type", "application/json");
+    const { revalidate, ...restOptions } = options || {};
+
+    const headers = new Headers(restOptions.headers);
+
+    const isFormData = restOptions.body instanceof FormData;
+    if (!isFormData) {
+        headers.set("Content-Type", "application/json");
+    }
 
     const isServer = typeof window === "undefined";
 
@@ -26,7 +32,7 @@ export async function apiFetch<T = unknown>(
         } catch { }
     }
 
-    const { revalidate, ...restOptions } = options || {};
+
 
     // 🚨 KEY LOGIC
     const fetchOptions: RequestInit = {

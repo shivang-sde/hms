@@ -8,11 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { KeyRound, Mail, AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Image from "next/image";
 
 export default function LoginPage() {
     const [errorMessage, dispatch, isPending] = useActionState(
         authenticate,
-        undefined,
+        undefined
     );
 
     return (
@@ -20,8 +21,15 @@ export default function LoginPage() {
             <Card className="w-full max-w-md border-border/50 bg-background/80 backdrop-blur-xl shadow-2xl">
                 <CardHeader className="space-y-1 text-center">
 
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-200">
-                        <KeyRound className="h-8 w-8 text-white" />
+                    <div className="mx-auto mb-4 flex h-40 w-40 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-200">
+                        <Image
+                            src="/hms.png"
+                            alt="hms"
+                            width={400}
+                            height={400}
+                            onError={(e) => console.error("Image failed to load", e)}
+                        />
+
 
                     </div>
 
@@ -48,6 +56,7 @@ export default function LoginPage() {
                                     type="email"
                                     placeholder="name@company.com"
                                     required
+                                    disabled={isPending}
                                     className="pl-10 h-12 bg-muted/50 text-foreground border-border/50 focus:border-indigo-500/50 transition-all rounded-xl"
                                 />
                             </div>
@@ -62,6 +71,7 @@ export default function LoginPage() {
                                     type="password"
                                     placeholder="••••••••"
                                     required
+                                    disabled={isPending}
                                     className="pl-10 h-12 bg-muted/50 text-foreground border-border/50 focus:border-indigo-500/50 transition-all rounded-xl"
                                 />
                             </div>
@@ -80,9 +90,6 @@ export default function LoginPage() {
                                 </>
                             ) : "Sign In"}
                         </Button>
-                        {/* <div className="text-center text-sm text-muted-foreground">
-                            Forgot your password? <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">Reset it</a>
-                        </div> */}
                     </CardFooter>
                 </form>
             </Card>
