@@ -1,20 +1,10 @@
-/**
- * Typed API fetch helper used by all client components.
- * Throws on non-2xx responses with the server-provided error message.
- */
 export async function apiFetch<T = unknown>(
     url: string,
-    options?: RequestInit,
+    options?: RequestInit & { revalidate?: number },
 ): Promise<T> {
-    const isBuilding = process.env.NEXT_PHASE === 'phase-production-build';
 
-    if (isBuilding && typeof window === "undefined") {
-        console.log(`[Build] Skipping API call to ${url}`);
-        return [] as T;
-    }
     let finalUrl = url;
 
-    // Handle server-side relative URLs
     if (typeof window === "undefined" && url.startsWith("/")) {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
         finalUrl = `${baseUrl}${url}`;
@@ -23,8 +13,9 @@ export async function apiFetch<T = unknown>(
     const headers = new Headers(options?.headers);
     headers.set("Content-Type", "application/json");
 
-    // Forward cookies if on server to maintain session
-    if (typeof window === "undefined") {
+    const isServer = typeof window === "undefined";
+
+    if (isServer) {
         try {
             const { cookies } = await import("next/headers");
             const cookieStore = await cookies();
@@ -32,30 +23,38 @@ export async function apiFetch<T = unknown>(
             if (cookieString) {
                 headers.set("Cookie", cookieString);
             }
-        } catch (error) {
-            // next/headers might not be available or throw in some contexts (e.g. middleware or edge)
-            // We ignore it and proceed without cookies if it fails
+        } catch { }
+    }
+
+    const { revalidate, ...restOptions } = options || {};
+
+    // 🚨 KEY LOGIC
+    const fetchOptions: RequestInit = {
+        ...restOptions,
+        headers,
+    };
+
+    if (isServer) {
+        if (revalidate !== undefined) {
+            // Cache only when explicitly requested
+            fetchOptions.next = { revalidate };
+        } else {
+            // Default: NO caching (safe for user data)
+            fetchOptions.cache = 'no-store';
         }
     }
 
-    const res = await fetch(finalUrl, {
-        cache: 'no-store',
-        ...options,
-        headers,
-    });
+    const res = await fetch(finalUrl, fetchOptions);
 
     if (!res.ok) {
         let message = `Request failed: ${res.status} ${res.statusText}`;
         try {
             const body = await res.json();
             if (body?.error) message = body.error;
-        } catch {
-            // ignore JSON parse errors
-        }
+        } catch { }
         throw new Error(message);
     }
 
-    // 204 No Content or empty body
     const text = await res.text();
     if (!text) return undefined as T;
 
