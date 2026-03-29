@@ -10,3 +10,8 @@ coverage
 *.log
 .env
 .env.local
+*.md 
+notesss
+docs
+hms_backup_clean.sql
+hms_backup.sql
