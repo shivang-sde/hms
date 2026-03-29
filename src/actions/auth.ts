@@ -10,7 +10,10 @@ export async function authenticate(
     formData: FormData,
 ) {
     try {
-        await signIn("credentials", Object.fromEntries(formData.entries()));
+        await signIn("credentials", {
+            ...Object.fromEntries(formData.entries()),
+            redirectTo: "/"
+        });
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {
@@ -22,7 +25,7 @@ export async function authenticate(
         }
         throw error;
     }
-    
+
     redirect("/");
 }
 
