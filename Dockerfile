@@ -63,7 +63,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # Copy static files
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-RUN npx prisma migrate deploy
 
 # Switch to non-root user
 USER nextjs
