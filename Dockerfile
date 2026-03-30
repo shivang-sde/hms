@@ -53,6 +53,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 # ✅ FIXED: Copy node_modules (CRITICAL - was missing!)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
+# ✅ ADD THIS: Copy prisma directory for migrations
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+
+
 # Copy public assets
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
