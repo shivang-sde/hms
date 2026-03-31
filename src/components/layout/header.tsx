@@ -97,10 +97,14 @@ export function Header() {
                                 </p>
                             </div>
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
-                            <Link href="/settings">Settings</Link>
-                        </DropdownMenuItem>
+                        {userRole === "ADMIN" && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                                    <Link href="/settings">Settings</Link>
+                                </DropdownMenuItem>
+                            </>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                             className="rounded-lg text-red-600 focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-900/10 cursor-pointer"
