@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ use
             prisma.task.findMany({
                 where: { assignedToId: userId },
                 take: 5,
-                orderBy: { scheduledDate: "asc" },
+                orderBy: { createdAt: "desc" },
                 include: { holding: { select: { code: true, name: true } } },
             }),
         ]);

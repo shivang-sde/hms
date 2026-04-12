@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -10,14 +11,12 @@ import {
     Users,
     FileText,
     Settings,
-    ChevronLeft,
-    ChevronRight,
+    ChevronDown,
     MapPinned,
     CheckSquare,
     Database,
     LogOut,
     BookOpen,
-    Wallet,
     BarChart3,
     Layers,
     CreditCard,
@@ -28,11 +27,9 @@ import { logout } from "@/actions/auth";
 
 const navigation = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["ADMIN", "STAFF"] },
-    { name: "Master Data", href: "/master-data", icon: Database, roles: ["ADMIN"] },
     { name: "Hoardings", href: "/holdings", icon: Building2, roles: ["ADMIN"] },
     { name: "Clients", href: "/clients", icon: Users, roles: ["ADMIN"] },
     { name: "Ownership Contracts", href: "/ownership-contracts", icon: FileText, roles: ["ADMIN"] },
-    { name: "Staff", href: "/admin/staff", icon: Users, roles: ["ADMIN"] },
     { name: "Bookings", href: "/bookings", icon: FileText, roles: ["ADMIN"] },
     { name: "Advertisements", href: "/advertisements", icon: FileText, roles: ["ADMIN"] },
     { name: "Tasks", href: "/tasks", icon: CheckSquare, roles: ["ADMIN", "STAFF"] },
@@ -46,12 +43,25 @@ const navigation = [
     { name: "Accounting Reports", href: "/reports/trial-balance", icon: BarChart3, roles: ["ADMIN"] },
 ];
 
+const generalSettingsSubmenus = [
+    { name: "Company Profile", href: "/settings", icon: Building2, roles: ["ADMIN"] },
+    { name: "Master Data", href: "/master-data", icon: Database, roles: ["ADMIN"] },
+    { name: "Staff", href: "/admin/staff", icon: Users, roles: ["ADMIN"] },
+];
+
 export function SidebarContent({ className, onLinkClick }: { className?: string; onLinkClick?: () => void }) {
     const pathname = usePathname();
     const { data: session } = useSession();
     const role = session?.user?.role || "STAFF";
 
     const filteredNavigation = navigation.filter(item => item.roles.includes(role));
+    const filteredSettingsSubmenus = generalSettingsSubmenus.filter(item => item.roles.includes(role));
+
+    const isGeneralSettingsActive = generalSettingsSubmenus.some(
+        item => item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+    );
+
+    const [settingsOpen, setSettingsOpen] = useState(isGeneralSettingsActive);
 
     return (
         <div className={cn("flex flex-col h-full", className)}>
@@ -96,6 +106,73 @@ export function SidebarContent({ className, onLinkClick }: { className?: string;
                             </Link>
                         );
                     })}
+
+                    {/* General Settings - Collapsible Group */}
+                    {filteredSettingsSubmenus.length > 0 && (
+                        <div className="pt-1">
+                            <button
+                                onClick={() => setSettingsOpen(!settingsOpen)}
+                                className={cn(
+                                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 w-full",
+                                    isGeneralSettingsActive
+                                        ? "text-indigo-600 dark:text-indigo-400"
+                                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                )}
+                            >
+                                <Settings
+                                    className={cn(
+                                        "h-4.5 w-4.5 shrink-0",
+                                        isGeneralSettingsActive && "text-indigo-500"
+                                    )}
+                                />
+                                <span className="flex-1 text-left">General Settings</span>
+                                <ChevronDown
+                                    className={cn(
+                                        "h-4 w-4 shrink-0 transition-transform duration-200",
+                                        settingsOpen && "rotate-180"
+                                    )}
+                                />
+                            </button>
+
+                            <div
+                                className={cn(
+                                    "overflow-hidden transition-all duration-200",
+                                    settingsOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                                )}
+                            >
+                                <div className="ml-3 pl-3 border-l border-border/50 space-y-0.5 mt-1">
+                                    {filteredSettingsSubmenus.map((item) => {
+                                        const isActive =
+                                            item.href === "/"
+                                                ? pathname === "/"
+                                                : pathname.startsWith(item.href);
+
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={onLinkClick}
+                                                className={cn(
+                                                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
+                                                    isActive
+                                                        ? "bg-gradient-to-r from-indigo-500/15 to-purple-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                                )}
+                                            >
+                                                <item.icon
+                                                    className={cn(
+                                                        "h-4 w-4 shrink-0",
+                                                        isActive && "text-indigo-500"
+                                                    )}
+                                                />
+                                                <span>{item.name}</span>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -143,6 +143,14 @@ export const taskSchema = z.object({
     notes: z.string().optional(),
     holdingId: z.string().optional(),
     advertisementId: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.taskType !== "INSPECTION" && (!data.holdingId || data.holdingId.trim() === "")) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Holding is required for this task type",
+            path: ["holdingId"],
+        });
+    }
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;

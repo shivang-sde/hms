@@ -201,13 +201,29 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {holdings.map((holding) => (
-                                            <SelectItem key={holding.id} value={holding.id}>
-                                                {holding.code} - {holding.name} ({holding.city?.name || 'Unknown City'})
-                                            </SelectItem>
-                                        ))}
+                                        {holdings.length === 0 ? (
+                                            <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                                                No available holdings found
+                                            </div>
+                                        ) : (
+                                            holdings.map((holding) => (
+                                                <SelectItem key={holding.id} value={holding.id}>
+                                                    <span className="flex items-center gap-2">
+                                                        {holding.code} - {holding.name} ({holding.city?.name || 'Unknown City'})
+                                                        {initialData && holding.id === initialData.holdingId && holding.status !== "AVAILABLE" && (
+                                                            <span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                                                Current
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
+                                <FormDescription>
+                                    Only available holdings are shown.
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

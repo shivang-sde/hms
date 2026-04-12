@@ -84,8 +84,8 @@ export function StaffDashboard({ stats }: StaffDashboardProps) {
                 <Card className="col-span-1 lg:col-span-2 shadow-md border-indigo-500/10">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
-                            <CardTitle className="text-lg">Upcoming Tasks</CardTitle>
-                            <CardDescription>Tasks scheduled for your attention.</CardDescription>
+                            <CardTitle className="text-lg">Recent Tasks</CardTitle>
+                            <CardDescription>Your latest assigned tasks, newest first.</CardDescription>
                         </div>
                         <Button asChild variant="link" size="sm" className="text-indigo-600">
                             <Link href="/tasks" className="flex items-center gap-1">

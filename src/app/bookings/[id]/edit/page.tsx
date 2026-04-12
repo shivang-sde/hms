@@ -32,6 +32,11 @@ export default async function EditBookingPage({ params }: EditBookingPageProps) 
         notFound();
     }
 
+    // Show only AVAILABLE holdings + the holding already assigned to this booking
+    const availableHoldings = holdings.filter(
+        (holding: any) => holding.status === "AVAILABLE" || holding.id === booking.holdingId
+    );
+
     return (
         <div className="space-y-6 max-w-2xl mx-auto">
             <PageHeader
@@ -43,7 +48,7 @@ export default async function EditBookingPage({ params }: EditBookingPageProps) 
                 <BookingForm
                     initialData={booking}
                     clients={clients}
-                    holdings={holdings}
+                    holdings={availableHoldings}
                 />
             </div>
         </div>

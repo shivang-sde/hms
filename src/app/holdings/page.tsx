@@ -1,7 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { HoldingListColumns } from "@/components/holdings/columns";
+import { HoldingsList } from "@/components/holdings/holdings-list";
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -25,13 +24,8 @@ export default async function HoldingsPage() {
                     </Link>
                 </Button>
             </PageHeader>
-            <div className="bg-card">
-                <DataTable
-                    columns={HoldingListColumns}
-                    data={holdings}
-                    emptyMessage="No holdings found."
-                />
-            </div>
+            <HoldingsList holdings={holdings} />
         </div>
     );
 }
+

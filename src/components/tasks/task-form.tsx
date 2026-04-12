@@ -100,6 +100,9 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
         defaultValues: defaultValues as any,
     });
 
+    const watchedTaskType = form.watch("taskType");
+    const isHoldingRequired = watchedTaskType !== "INSPECTION";
+
     const onSubmit = async (data: TaskFormData) => {
         try {
             if (initialData) {
@@ -147,7 +150,16 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Type</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select
+                                    onValueChange={(val) => {
+                                        field.onChange(val);
+                                        // Clear holdingId error when switching to INSPECTION
+                                        if (val === "INSPECTION") {
+                                            form.clearErrors("holdingId");
+                                        }
+                                    }}
+                                    defaultValue={field.value}
+                                >
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select type" />
@@ -265,7 +277,14 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
                         name="holdingId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Holding (Optional)</FormLabel>
+                                <FormLabel>
+                                    Holding{" "}
+                                    {isHoldingRequired ? (
+                                        <span className="text-destructive">*</span>
+                                    ) : (
+                                        <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                                    )}
+                                </FormLabel>
                                 <Select
                                     onValueChange={(val) => field.onChange(val === "none" ? undefined : val)}
                                     defaultValue={field.value || "none"}
@@ -276,7 +295,9 @@ export function TaskForm({ initialData, holdings, advertisements, staff }: TaskF
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="none">None</SelectItem>
+                                        {!isHoldingRequired && (
+                                            <SelectItem value="none">None</SelectItem>
+                                        )}
                                         {holdings.map((holding) => (
                                             <SelectItem key={holding.id} value={holding.id}>
                                                 {holding.code} - {holding.name}
