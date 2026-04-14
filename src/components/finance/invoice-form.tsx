@@ -222,7 +222,7 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                                     <SelectContent>
                                         {clients.map((client) => (
                                             <SelectItem key={client.id} value={client.id}>
-                                                {client.name}
+                                                <span className="truncate">{client.name}</span>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -252,7 +252,7 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                                         {filteredBookings.length > 0 ? (
                                             filteredBookings.map((booking) => (
                                                 <SelectItem key={booking.id} value={booking.id}>
-                                                    {booking.bookingNumber} - {booking.holding.code} ({format(new Date(booking.startDate), 'MMM dd')} - {format(new Date(booking.endDate), 'MMM dd')})
+                                                    <span className="truncate">{booking.bookingNumber} - {booking.holding.code} ({format(new Date(booking.startDate), 'MMM dd')} - {format(new Date(booking.endDate), 'MMM dd')})</span>
                                                 </SelectItem>
                                             ))
                                         ) : (

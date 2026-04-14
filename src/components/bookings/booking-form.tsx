@@ -65,6 +65,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
             notes: initialData.notes || undefined,
             clientId: initialData.clientId,
             holdingId: initialData.holdingId,
+            freeMountings: initialData.freeMountings,
         }
         : {
             bookingNumber: "",
@@ -178,7 +179,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                     <SelectContent>
                                         {clients.map((client) => (
                                             <SelectItem key={client.id} value={client.id}>
-                                                {client.name}
+                                                <span className="truncate">{client.name}</span>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -208,7 +209,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                         ) : (
                                             holdings.map((holding) => (
                                                 <SelectItem key={holding.id} value={holding.id}>
-                                                    <span className="flex items-center gap-2">
+                                                    <span className="flex items-center gap-2 truncate">
                                                         {holding.code} - {holding.name} ({holding.city?.name || 'Unknown City'})
                                                         {initialData && holding.id === initialData.holdingId && holding.status !== "AVAILABLE" && (
                                                             <span className="inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">

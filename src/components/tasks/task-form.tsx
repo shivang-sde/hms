@@ -331,15 +331,15 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
                                         value={field.value || "none"}
                                     >
                                         <FormControl>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="truncate">
                                                 <SelectValue placeholder="Select booking" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="none">Select a booking</SelectItem>
                                             {bookings.map((booking) => (
-                                                <SelectItem key={booking.id} value={booking.id}>
-                                                    {booking.bookingNumber} — {booking.client?.name || "N/A"} ({booking.holding?.code || "N/A"})
+                                                <SelectItem key={booking.id} value={booking.id} className="max-w-[var(--radix-select-trigger-width)] truncate">
+                                                    <span className="truncate">{booking.bookingNumber} — {booking.client?.name || "N/A"} ({booking.holding?.code || "N/A"})</span>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
