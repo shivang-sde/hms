@@ -14,6 +14,7 @@ export async function authenticate(
         // from the previous user's session after redirect.
         revalidatePath("/", "layout");
 
+
         await signIn("credentials", {
             ...Object.fromEntries(formData.entries()),
             redirectTo: "/"
@@ -36,4 +37,5 @@ export async function logout() {
     // doesn't see stale content from this session.
     revalidatePath("/", "layout");
     await signOut({ redirectTo: "/login" });
+
 }
