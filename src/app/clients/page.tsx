@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { ClientListColumns } from "@/components/clients/columns";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import Link from "next/link";
+import { ClientsListClient } from "@/components/clients/clients-list";
 
 export default async function ClientsPage() {
     const clients = await apiFetch<any[]>("/api/clients");
@@ -23,13 +22,7 @@ export default async function ClientsPage() {
                     </Link>
                 </Button>
             </PageHeader>
-            <div className="bg-card">
-                <DataTable
-                    columns={ClientListColumns}
-                    data={clients}
-                    emptyMessage="No clients found. Add one to get started."
-                />
-            </div>
+            <ClientsListClient clients={clients} />
         </div>
     );
 }

@@ -5,8 +5,7 @@ import { Plus, Receipt, FileText } from "lucide-react";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { InvoiceListColumns, ReceiptListColumns } from "@/components/finance/columns";
+import { BillingListClient } from "@/components/finance/billing-list";
 
 export default async function BillingPage() {
     const [invoices, receipts] = await Promise.all([
@@ -45,20 +44,12 @@ export default async function BillingPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="invoices" className="bg-card rounded-md border shadow-sm">
-                    <DataTable
-                        columns={InvoiceListColumns}
-                        data={invoices}
-                        emptyMessage="No invoices generated yet."
-                    />
+                <TabsContent value="invoices">
+                    <BillingListClient type="invoices" data={invoices} />
                 </TabsContent>
 
-                <TabsContent value="receipts" className="bg-card rounded-md border shadow-sm">
-                    <DataTable
-                        columns={ReceiptListColumns}
-                        data={receipts}
-                        emptyMessage="No payments recorded yet."
-                    />
+                <TabsContent value="receipts">
+                    <BillingListClient type="receipts" data={receipts} />
                 </TabsContent>
             </Tabs>
         </div>

@@ -3,7 +3,7 @@
 import { formatArea, formatEnum, cn } from "@/lib/utils";
 import { Holding } from "@prisma/client";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Trash2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -94,6 +94,17 @@ function HoldingActions({ holding }: { holding: Holding }) {
                         <Pencil className="mr-2 h-4 w-4" /> Edit
                     </Link>
                 </DropdownMenuItem>
+                {holding.latitude && holding.longitude && (
+                    <DropdownMenuItem asChild>
+                        <a
+                            href={`https://maps.google.com/?q=${holding.latitude},${holding.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Navigation className="mr-2 h-4 w-4" /> Navigate
+                        </a>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
                     <Trash2 className="mr-2 h-4 w-4" /> Delete

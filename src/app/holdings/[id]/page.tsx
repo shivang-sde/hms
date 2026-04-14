@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatArea, formatDate, formatEnum } from "@/lib/utils";
-import { MapPin, Ruler, Lightbulb, Clock, Pencil, CalendarClock } from "lucide-react";
+import { MapPin, Ruler, Lightbulb, Clock, Pencil, CalendarClock, Navigation } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
@@ -50,6 +50,17 @@ export default async function HoldingDetailsPage({ params }: HoldingDetailsPageP
                 />
                 <div className="flex items-center gap-2">
                     <StatusBadge status={holding.status} />
+                    {holding.latitude && holding.longitude && (
+                        <Button asChild variant="outline" size="sm">
+                            <a
+                                href={`https://maps.google.com/?q=${holding.latitude},${holding.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Navigation className="mr-2 h-4 w-4" /> Navigate
+                            </a>
+                        </Button>
+                    )}
                     {role === "ADMIN" && (
                         <Button asChild variant="outline" size="sm">
                             <Link href={`/holdings/${id}/edit`}>
@@ -92,6 +103,11 @@ export default async function HoldingDetailsPage({ params }: HoldingDetailsPageP
                                 <p className="text-muted-foreground mb-1">Location Details</p>
                                 <p className="font-medium">{holding.landmark || "No landmark"}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{holding.city.name}, {holding.city.state}</p>
+                                {holding.latitude && holding.longitude && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        📍 {Number(holding.latitude).toFixed(6)}, {Number(holding.longitude).toFixed(6)}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

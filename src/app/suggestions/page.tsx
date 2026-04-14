@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { SuggestionListColumns } from "@/components/suggestions/columns";
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin } from "lucide-react";
 import Link from "next/link";
+import { SuggestionsListClient } from "@/components/suggestions/suggestions-list";
 
 export default async function SuggestionsPage() {
     const suggestions = await apiFetch<any[]>("/api/location-suggestions");
@@ -24,13 +23,7 @@ export default async function SuggestionsPage() {
                     </Link>
                 </Button>
             </div>
-            <div className="bg-card">
-                <DataTable
-                    columns={SuggestionListColumns}
-                    data={suggestions}
-                    emptyMessage="No suggestions pending review."
-                />
-            </div>
+            <SuggestionsListClient suggestions={suggestions} />
         </div>
     );
 }

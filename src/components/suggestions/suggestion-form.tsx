@@ -58,8 +58,8 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
             cityId: initialData.cityId,
             description: initialData.description || undefined,
             photos: initialData.photos || [],
-            latitude: initialData.latitude ? Number(initialData.latitude) : undefined,
-            longitude: initialData.longitude ? Number(initialData.longitude) : undefined,
+            latitude: initialData.latitude ? Number(initialData.latitude) : ("" as any),
+            longitude: initialData.longitude ? Number(initialData.longitude) : ("" as any),
             landmark: initialData.landmark || undefined,
             ownerName: initialData.ownerName || undefined,
             ownerPhone: initialData.ownerPhone || undefined,
@@ -177,7 +177,7 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
 
                     <div className="col-span-1 sm:col-span-2 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Location Coordinates</span>
+                            <span className="text-sm font-medium">Location Coordinates <span className="text-red-500">*</span></span>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -212,15 +212,15 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
                                 name="latitude"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Latitude</FormLabel>
+                                        <FormLabel>Latitude <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
-                                                placeholder="Auto-filled from location"
+                                                step="any"
+                                                placeholder="e.g. 23.0225"
                                                 {...field}
                                                 value={field.value ?? ""}
-                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                                                className={field.value ? "" : "bg-muted"}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : "")}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -232,15 +232,15 @@ export function SuggestionForm({ initialData, cities }: SuggestionFormProps) {
                                 name="longitude"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Longitude</FormLabel>
+                                        <FormLabel>Longitude <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
-                                                placeholder="Auto-filled from location"
+                                                step="any"
+                                                placeholder="e.g. 72.5714"
                                                 {...field}
                                                 value={field.value ?? ""}
-                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                                                className={field.value ? "" : "bg-muted"}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : "")}
                                             />
                                         </FormControl>
                                         <FormMessage />

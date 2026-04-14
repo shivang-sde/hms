@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
-import { AdvertisementListColumns } from "@/components/advertisements/columns";
 import { Button } from "@/components/ui/button";
 import { Plus, Megaphone } from "lucide-react";
 import Link from "next/link";
+import { AdvertisementsListClient } from "@/components/advertisements/advertisements-list";
 
 export default async function AdvertisementsPage() {
     const advertisements = await apiFetch<any[]>("/api/advertisements");
@@ -23,13 +22,7 @@ export default async function AdvertisementsPage() {
                     </Link>
                 </Button>
             </PageHeader>
-            <div className="bg-card">
-                <DataTable
-                    columns={AdvertisementListColumns}
-                    data={advertisements}
-                    emptyMessage="No advertisements found."
-                />
-            </div>
+            <AdvertisementsListClient advertisements={advertisements} />
         </div>
     );
 }

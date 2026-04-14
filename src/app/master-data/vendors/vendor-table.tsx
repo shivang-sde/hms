@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/shared/data-table";
+import { FilterableDataTable } from "@/components/shared/filterable-data-table";
 
 const vendorColumns = [
     {
@@ -49,6 +49,33 @@ const vendorColumns = [
     },
 ];
 
+const VENDOR_STATUS_OPTIONS = [
+    { value: "ALL", label: "All Statuses" },
+    { value: "ACTIVE", label: "Active" },
+    { value: "INACTIVE", label: "Inactive" },
+];
+
 export function VendorTable({ vendors }: { vendors: any[] }) {
-    return <DataTable columns={vendorColumns} data={vendors} />;
+    return (
+        <FilterableDataTable
+            columns={vendorColumns}
+            data={vendors}
+            emptyMessage="No vendors found."
+            filteredEmptyMessage="No vendors match your filters."
+            searchPlaceholder="Search by name, phone, or city..."
+            searchFields={[
+                { path: "name" },
+                { path: "phone" },
+                { path: "city.name" },
+            ]}
+            filters={[
+                {
+                    key: "status",
+                    label: "Status",
+                    options: VENDOR_STATUS_OPTIONS,
+                    accessor: (row: any) => row.isActive ? "ACTIVE" : "INACTIVE",
+                },
+            ]}
+        />
+    );
 }

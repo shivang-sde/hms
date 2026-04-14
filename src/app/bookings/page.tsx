@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { apiFetch } from "@/lib/api";
 import { PageHeader } from "@/components/shared/page-header";
-import { DataTable } from "@/components/shared/data-table";
 import { BookingListColumns } from "@/components/bookings/columns";
 import { Button } from "@/components/ui/button";
 import { Plus, CalendarClock } from "lucide-react";
 import Link from "next/link";
+import { BookingsListClient } from "@/components/bookings/bookings-list";
 
 export default async function BookingsPage() {
     const bookings = await apiFetch<any[]>("/api/bookings");
@@ -23,13 +23,7 @@ export default async function BookingsPage() {
                     </Link>
                 </Button>
             </PageHeader>
-            <div className="bg-card">
-                <DataTable
-                    columns={BookingListColumns}
-                    data={bookings}
-                    emptyMessage="No bookings found."
-                />
-            </div>
+            <BookingsListClient bookings={bookings} />
         </div>
     );
 }

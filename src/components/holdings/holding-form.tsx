@@ -62,8 +62,8 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
             width: initialData.width ? Number(initialData.width) : 0,
             height: initialData.height ? Number(initialData.height) : 0,
             totalArea: initialData.totalArea ? Number(initialData.totalArea) : 0,
-            latitude: initialData.latitude ? Number(initialData.latitude) : undefined,
-            longitude: initialData.longitude ? Number(initialData.longitude) : undefined,
+            latitude: initialData.latitude ? Number(initialData.latitude) : ("" as any),
+            longitude: initialData.longitude ? Number(initialData.longitude) : ("" as any),
             illumination: (initialData.illumination as "LIT" | "NON_LIT" | "DIGITAL") || "NON_LIT",
             status: (initialData.status as "AVAILABLE" | "BOOKED" | "UNDER_MAINTENANCE" | "INACTIVE") || "AVAILABLE",
             maintenanceCycle: initialData.maintenanceCycle || 90,
@@ -376,7 +376,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
 
                     <div className="col-span-1 sm:col-span-2 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Location Coordinates</span>
+                            <span className="text-sm font-medium">Location Coordinates <span className="text-red-500">*</span></span>
                             <Button
                                 type="button"
                                 variant="outline"
@@ -411,15 +411,15 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                                 name="latitude"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Latitude</FormLabel>
+                                        <FormLabel>Latitude <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
-                                                placeholder="Auto-filled from location"
+                                                step="any"
+                                                placeholder="e.g. 23.0225"
                                                 {...field}
                                                 value={field.value ?? ""}
-                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                                                className={field.value ? "" : "bg-muted"}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : "")}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -431,15 +431,15 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                                 name="longitude"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Longitude</FormLabel>
+                                        <FormLabel>Longitude <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
-                                                placeholder="Auto-filled from location"
+                                                step="any"
+                                                placeholder="e.g. 72.5714"
                                                 {...field}
                                                 value={field.value ?? ""}
-                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                                                className={field.value ? "" : "bg-muted"}
+                                                onChange={e => field.onChange(e.target.value ? parseFloat(e.target.value) : "")}
                                             />
                                         </FormControl>
                                         <FormMessage />
