@@ -172,7 +172,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                 <FormLabel>Client</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="max-w-full">
                                             <SelectValue placeholder="Select client" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -197,7 +197,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                 <FormLabel>Holding</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="max-w-full">
                                             <SelectValue placeholder="Select holding" />
                                         </SelectTrigger>
                                     </FormControl>

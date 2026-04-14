@@ -331,7 +331,7 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
                                         value={field.value || "none"}
                                     >
                                         <FormControl>
-                                            <SelectTrigger className="truncate">
+                                            <SelectTrigger className="truncate max-w-full">
                                                 <SelectValue placeholder="Select booking" />
                                             </SelectTrigger>
                                         </FormControl>
@@ -372,7 +372,7 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
                                         value={field.value || "none"}
                                     >
                                         <FormControl>
-                                            <SelectTrigger>
+                                            <SelectTrigger className="max-w-full">
                                                 <SelectValue placeholder="Select advertisement" />
                                             </SelectTrigger>
                                         </FormControl>

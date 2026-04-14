@@ -49,7 +49,7 @@ export default function VendorStatementPage() {
                     <div className="flex-1 min-w-[200px]">
                         <label className="text-sm font-medium mb-1 block">Vendor</label>
                         <Select value={selectedVendorId} onValueChange={setSelectedVendorId}>
-                            <SelectTrigger>
+                            <SelectTrigger className="max-w-full">
                                 <SelectValue placeholder="Select vendor" />
                             </SelectTrigger>
                             <SelectContent>

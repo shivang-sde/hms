@@ -215,7 +215,7 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                                     form.setValue("bookingId", ""); // Reset booking on client change
                                 }} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="max-w-full">
                                             <SelectValue placeholder="Select client" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -244,7 +244,7 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                                     disabled={!watchedClientId}
                                 >
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="max-w-full">
                                             <SelectValue placeholder={watchedClientId ? "Select booking" : "Select client first"} />
                                         </SelectTrigger>
                                     </FormControl>

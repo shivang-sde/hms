@@ -65,7 +65,7 @@ export default function GeneralLedgerPage() {
                     <div className="flex-1 min-w-[200px]">
                         <label className="text-sm font-medium mb-1 block">Ledger</label>
                         <Select value={selectedLedgerId} onValueChange={setSelectedLedgerId}>
-                            <SelectTrigger>
+                            <SelectTrigger className="max-w-full">
                                 <SelectValue placeholder="Select ledger" />
                             </SelectTrigger>
                             <SelectContent>

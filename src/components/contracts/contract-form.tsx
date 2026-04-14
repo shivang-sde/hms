@@ -245,7 +245,7 @@ export function ContractForm({ initialData, holdings }: ContractFormProps) {
                                 <FormLabel>Holding</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="max-w-full">
                                             <SelectValue placeholder="Select holding" />
                                         </SelectTrigger>
                                     </FormControl>
