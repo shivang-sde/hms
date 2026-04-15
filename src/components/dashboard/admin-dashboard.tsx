@@ -84,7 +84,7 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* Expiring Soon */}
                 <Card className="col-span-1 border border-amber-500/30 bg-amber-500/5">
                     <CardHeader>
@@ -147,6 +147,44 @@ export function AdminDashboard({ stats }: AdminDashboardProps) {
                             </ul>
                         ) : (
                             <p className="text-sm text-muted-foreground py-4 text-center">No recent bookings found.</p>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Upcoming Tasks */}
+                <Card className="col-span-1 border border-indigo-500/30 bg-indigo-500/5">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <CalendarClock className="h-5 w-5 text-indigo-600" />
+                            Upcoming Tasks
+                        </CardTitle>
+                        <CardDescription>Scheduled pending operations.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {stats.upcomingTasks?.length > 0 ? (
+                            <ul className="space-y-4">
+                                {stats.upcomingTasks.map((tsk: any) => (
+                                    <li key={tsk.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm border-b border-indigo-500/20 pb-4 sm:pb-2 last:border-0 last:pb-0">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="font-medium text-indigo-900 dark:text-indigo-100 truncate">{tsk.title}</p>
+                                            <p className="text-xs text-muted-foreground truncate">
+                                                {tsk.holding?.code ? `${tsk.holding.code} • ` : ""}{tsk.taskType.toLowerCase()}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1 truncate">
+                                                {tsk.assignedTo?.name ? `Assigned to: ${tsk.assignedTo.name}` : "Unassigned"}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end sm:text-right shrink-0 gap-2">
+                                            <p className="font-medium text-indigo-900 dark:text-indigo-100">{formatDate(tsk.scheduledDate)}</p>
+                                            <Link href={`/tasks/${tsk.id}/edit`} className="text-xs text-indigo-600 hover:underline bg-indigo-100 dark:bg-indigo-900/30 px-2 py-1 rounded-md">
+                                                Quick Assign
+                                            </Link>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground py-4 text-center">No upcoming tasks scheduled.</p>
                         )}
                     </CardContent>
                 </Card>

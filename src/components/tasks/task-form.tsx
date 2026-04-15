@@ -110,10 +110,12 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
 
     const watchedTaskType = form.watch("taskType");
     const watchedBookingId = form.watch("bookingId");
-
-    // Determine which linking fields to show
     const isBookingLinked = watchedTaskType === "INSTALLATION" || watchedTaskType === "MOUNTING";
     const isHoldingLinked = watchedTaskType === "MAINTENANCE" || watchedTaskType === "INSPECTION";
+    const isHoldingRequired = watchedTaskType !== "INSPECTION";
+    const watchedStatus = form.watch("status");
+    const isAssignedToDisabled = ["IN_PROGRESS", "COMPLETED", "UNDER_REVIEW"].includes(watchedStatus);
+    const assignedToName = staff.find((member) => member.id === defaultValues.assignedTo)?.name;
 
     // Filter advertisements by selected booking
     const filteredAdvertisements = useMemo(() => {
@@ -249,6 +251,7 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
                                 <Select
                                     onValueChange={(val) => field.onChange(val === "none" ? undefined : val)}
                                     defaultValue={field.value || "none"}
+                                    disabled={isAssignedToDisabled}
                                 >
                                     <FormControl>
                                         <SelectTrigger>
@@ -264,6 +267,11 @@ export function TaskForm({ initialData, holdings, bookings, advertisements, staf
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {isAssignedToDisabled && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        assigned to {assignedToName}
+                                    </p>
+                                )}
                                 <FormMessage />
                             </FormItem>
                         )}

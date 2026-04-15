@@ -285,7 +285,7 @@ export function ContractForm({ initialData, holdings }: ContractFormProps) {
                                 name="ownerType"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Owner Type</FormLabel>
+                                        <FormLabel>Land Type</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>

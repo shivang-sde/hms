@@ -20,6 +20,7 @@ export async function GET() {
             pendingTasks,
             recentBookings,
             expiringBookings,
+            upcomingTasks,
         ] = await Promise.all([
             prisma.holding.count().catch((err: Error) => { console.error("Error in totalHoldings:", err); throw err; }),
             prisma.client.count().catch((err: Error) => { console.error("Error in totalClients:", err); throw err; }),
@@ -58,6 +59,15 @@ export async function GET() {
                     holding: { select: { code: true } },
                 },
             }).catch((err: Error) => { console.error("Error in expiringBookings:", err); throw err; }),
+            prisma.task.findMany({
+                where: { status: "PENDING", scheduledDate: { gte: now } },
+                take: 5,
+                orderBy: { scheduledDate: "asc" },
+                include: {
+                    holding: { select: { code: true } },
+                    assignedTo: { select: { name: true } }
+                }
+            }).catch((err: Error) => { console.error("Error in upcomingTasks:", err); console.log(err); return []; }),
         ]);
 
         console.log("[GET /api/dashboard] Stats fetched successfully.");
@@ -73,6 +83,7 @@ export async function GET() {
             pendingTasks,
             recentBookings,
             expiringBookings,
+            upcomingTasks,
         });
     } catch (error) {
         console.error("[GET /api/dashboard] Fatal error:", error);

@@ -407,7 +407,7 @@ export function BookingForm({ initialData, clients, holdings }: BookingFormProps
                                     <Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value) || 0)} />
                                 </FormControl>
                                 <FormDescription>
-                                    Number of days included for free mounting.
+                                    Number of free mounting in a year.
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>

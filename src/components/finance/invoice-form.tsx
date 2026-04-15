@@ -126,12 +126,17 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
     // Filter bookings based on selected client
     const filteredBookings = bookings.filter(b => b.clientId === watchedClientId);
 
-    // Auto-fill booking amount if booking selected and subtotal is empty
+    // Auto-fill booking amount and sync HSN code when booking changes
     useEffect(() => {
-        if (watchedBookingId && form.getValues("subtotal") === 0) {
-            const booking = bookings.find(b => b.id === watchedBookingId);
-            if (booking && booking.totalAmount) {
-                form.setValue("subtotal", Number(booking.totalAmount));
+        if (watchedBookingId) {
+            const booking: any = bookings.find(b => b.id === watchedBookingId);
+            if (booking) {
+                if (form.getValues("subtotal") === 0 && booking.totalAmount) {
+                    form.setValue("subtotal", Number(booking.totalAmount));
+                }
+                if (booking.holding?.hsnCodeId) {
+                    form.setValue("hsnCodeId", booking.holding.hsnCodeId);
+                }
             }
         }
     }, [watchedBookingId, bookings, form]);
@@ -213,6 +218,7 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                                 <Select onValueChange={(val) => {
                                     field.onChange(val);
                                     form.setValue("bookingId", ""); // Reset booking on client change
+                                    form.setValue("hsnCodeId", ""); // Reset HSN code on client change
                                 }} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger className="max-w-full">
@@ -352,26 +358,23 @@ export function InvoiceForm({ initialData, clients, bookings, hsnCodes }: Invoic
                     <FormField
                         control={form.control}
                         name="hsnCodeId"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>HSN Code</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        render={({ field }) => {
+                            const selectedHsn = hsnCodes.find((c) => c.id === field.value);
+                            return (
+                                <FormItem>
+                                    <FormLabel>HSN Code</FormLabel>
                                     <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select HSN code" />
-                                        </SelectTrigger>
+                                        <Input
+                                            {...field}
+                                            value={selectedHsn ? `${selectedHsn.code} (${selectedHsn.description})` : "Will fetch from booking"}
+                                            readOnly
+                                            className="bg-muted text-muted-foreground cursor-not-allowed"
+                                        />
                                     </FormControl>
-                                    <SelectContent>
-                                        {hsnCodes.map((code) => (
-                                            <SelectItem key={code.id} value={code.id}>
-                                                {code.code} ({code.description})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+                                    <FormMessage />
+                                </FormItem>
+                            );
+                        }}
                     />
 
                     <div className="col-span-2 border-t py-4">

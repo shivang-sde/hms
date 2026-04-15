@@ -15,6 +15,7 @@ interface NewHoldingPageProps {
         lat?: string;
         lng?: string;
         landmark?: string;
+        photos?: string;
         [key: string]: string | string[] | undefined;
     };
 }
@@ -34,6 +35,13 @@ export default async function NewHoldingPage({ searchParams }: NewHoldingPagePro
     if (params.lat) initialData.latitude = Number(params.lat) as any;
     if (params.lng) initialData.longitude = Number(params.lng) as any;
     if (params.landmark) initialData.landmark = decodeURIComponent(params.landmark as string);
+    if (params.photos) {
+        try {
+            initialData.images = JSON.parse(decodeURIComponent(params.photos as string));
+        } catch {
+            initialData.images = [];
+        }
+    }
 
     // Note: We use 'as any' for Decimal/Number compatibility in initialData partial
 

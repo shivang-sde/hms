@@ -49,6 +49,7 @@ export const holdingSchema = z.object({
     status: z.enum(["AVAILABLE", "BOOKED", "UNDER_MAINTENANCE", "INACTIVE"]).default("AVAILABLE"),
     maintenanceCycle: z.coerce.number().int().positive().default(90),
     notes: z.string().optional(),
+    images: z.array(z.string()).min(1, "At least one image is required"),
     cityId: z.string().min(1, "City is required"),
     holdingTypeId: z.string().min(1, "Holding type is required"),
     hsnCodeId: z.string().min(1, "HSN code is required"),
@@ -91,6 +92,8 @@ export const clientSchema = z.object({
     address: z.string().min(1, "Address is required"),
     isActive: z.boolean().default(true),
     cityId: z.string().optional(),
+    kycDocumentUrl: z.string().optional().nullable(),
+    agreementDocumentUrl: z.string().optional().nullable(),
 });
 
 export type ClientFormData = z.infer<typeof clientSchema>;
@@ -277,6 +280,8 @@ export const vendorSchema = z.object({
     ownershipContractId: z.string().optional().nullable(),
     cityId: z.string().optional().nullable(),
     ledgerId: z.string().min(1, "Accounts Payable ledger is required"),
+    kycDocumentUrl: z.string().optional().nullable(),
+    agreementDocumentUrl: z.string().optional().nullable(),
 });
 
 export type VendorFormData = z.infer<typeof vendorSchema>;

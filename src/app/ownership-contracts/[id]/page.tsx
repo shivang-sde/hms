@@ -59,7 +59,7 @@ export default async function ContractDetailsPage({ params }: ContractDetailsPag
                             <p className="font-medium text-base">{contract.ownerName}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground mb-1">Owner Type</p>
+                            <p className="text-muted-foreground mb-1">Land Type</p>
                             <p className="font-medium">{formatEnum(contract.ownerType)}</p>
                         </div>
                         <div>

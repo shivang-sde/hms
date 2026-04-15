@@ -24,6 +24,7 @@ import { vendorSchema, type VendorFormData } from "@/lib/validations";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import { DocumentUpload } from "@/components/shared/document-upload";
 
 interface VendorFormProps {
     initialData?: any;
@@ -48,6 +49,8 @@ export function VendorForm({ initialData, cities, ledgers, ownershipContracts }:
             ownershipContractId: initialData.ownershipContractId || undefined,
             cityId: initialData.cityId || undefined,
             ledgerId: initialData.ledgerId,
+            kycDocumentUrl: initialData.kycDocumentUrl || undefined,
+            agreementDocumentUrl: initialData.agreementDocumentUrl || undefined,
         }
         : {
             name: "",
@@ -61,6 +64,8 @@ export function VendorForm({ initialData, cities, ledgers, ownershipContracts }:
             ownershipContractId: undefined,
             cityId: undefined,
             ledgerId: "",
+            kycDocumentUrl: undefined,
+            agreementDocumentUrl: undefined,
         };
 
     const form = useForm<VendorFormData>({
@@ -288,6 +293,48 @@ export function VendorForm({ initialData, cities, ledgers, ownershipContracts }:
                             </FormItem>
                         )}
                     />
+
+                    {/* ── Document Uploads ─────────────────────────────────── */}
+                    <div className="row-span-2 border-t pt-4">
+                        <p className="font-semibold text-sm mb-4">Documents</p>
+                        <div className="grid gap-4">
+                            <FormField
+                                control={form.control}
+                                name="kycDocumentUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <DocumentUpload
+                                                label="KYC Document"
+                                                hint="Upload vendor's KYC (Aadhaar / PAN / Passport) as PDF or image"
+                                                value={field.value ?? undefined}
+                                                onChange={(url) => field.onChange(url ?? null)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="agreementDocumentUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <DocumentUpload
+                                                label="Agreement Document"
+                                                hint="Upload the signed vendor agreement (PDF or image)"
+                                                value={field.value ?? undefined}
+                                                onChange={(url) => field.onChange(url ?? null)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex justify-end gap-4 pt-4">

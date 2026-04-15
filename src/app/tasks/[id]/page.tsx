@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
+import { TaskReviewActions } from "@/components/tasks/task-review-actions";
 
 interface TaskDetailsPageProps {
     params: {
@@ -46,6 +47,7 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
         notFound();
     }
     const canComplete = role === "STAFF" && (task.status === "PENDING" || task.status === "IN_PROGRESS");
+    const needsReview = role === "ADMIN" && task.status === "UNDER_REVIEW";
     const isBookingLinked = task.taskType === "INSTALLATION" || task.taskType === "MOUNTING";
 
     return (
@@ -58,7 +60,9 @@ export default async function TaskDetailsPage({ params }: TaskDetailsPageProps) 
                 />
                 <div className="flex items-center gap-2">
                     <StatusBadge status={task.status} />
-                    {role === "ADMIN" ? (
+                    {needsReview ? (
+                        <TaskReviewActions taskId={id} />
+                    ) : role === "ADMIN" ? (
                         <Button asChild variant="outline" size="sm">
                             <Link href={`/tasks/${id}/edit`}>
                                 <Pencil className="mr-2 h-4 w-4" /> Edit

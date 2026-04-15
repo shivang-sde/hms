@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { City, Client } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DocumentUpload } from "@/components/shared/document-upload";
 
 interface ClientFormProps {
     initialData?: Client;
@@ -48,6 +49,8 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
             address: initialData.address,
             cityId: initialData.cityId || undefined,
             isActive: initialData.isActive,
+            kycDocumentUrl: initialData.kycDocumentUrl || undefined,
+            agreementDocumentUrl: initialData.agreementDocumentUrl || undefined,
         }
         : {
             name: "",
@@ -59,6 +62,8 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
             address: "",
             cityId: "",
             isActive: true,
+            kycDocumentUrl: undefined,
+            agreementDocumentUrl: undefined,
         };
 
     const form = useForm<ClientFormData>({
@@ -232,6 +237,48 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                             </FormItem>
                         )}
                     />
+
+                    {/* ── Document Uploads ─────────────────────────────────── */}
+                    <div className="row-span-2 border-t pt-4">
+                        <p className="font-semibold text-sm mb-4">Documents</p>
+                        <div className="grid gap-4">
+                            <FormField
+                                control={form.control}
+                                name="kycDocumentUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <DocumentUpload
+                                                label="KYC Document"
+                                                hint="Upload client's KYC (Aadhaar / PAN / Passport) as PDF or image"
+                                                value={field.value ?? undefined}
+                                                onChange={(url) => field.onChange(url ?? null)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="agreementDocumentUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <DocumentUpload
+                                                label="Agreement Document"
+                                                hint="Upload the signed client agreement (PDF or image)"
+                                                value={field.value ?? undefined}
+                                                onChange={(url) => field.onChange(url ?? null)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
 
                 </div>
 

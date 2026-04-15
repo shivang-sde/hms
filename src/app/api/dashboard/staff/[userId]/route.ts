@@ -22,7 +22,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ use
             prisma.task.count({
                 where: {
                     assignedToId: userId,
-                    status: { in: ["PENDING", "IN_PROGRESS"] },
+                    status: { in: ["PENDING"] },
                 },
             }),
             prisma.task.groupBy({
@@ -31,7 +31,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ use
                 _count: { id: true },
             }),
             prisma.task.findMany({
-                where: { assignedToId: userId },
+                where: { assignedToId: userId, status: "PENDING" },
                 take: 5,
                 orderBy: { createdAt: "desc" },
                 include: { holding: { select: { code: true, name: true } } },

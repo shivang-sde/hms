@@ -29,7 +29,7 @@ export const ContractListColumns = [
         className: "max-w-[180px] truncate",
     },
     {
-        header: "Owner Type",
+        header: "Land Type",
         cell: (row: any) => formatEnum(row.ownerType),
     },
     {

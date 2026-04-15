@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { getCurrentLocation } from "@/lib/geolocation";
 import { City, HoldingType, HsnCode, Holding } from "@prisma/client";
+import { MultiPhotoUpload } from "@/components/shared/multi-photo-upload";
 
 interface HoldingFormProps {
     initialData?: Partial<Holding>; // Changed from Holding to Partial<Holding> to support pre-filling from Suggestions
@@ -36,9 +37,37 @@ interface HoldingFormProps {
     hsnCodes: HsnCode[];
 }
 
+/**
+ * Generate a 3-letter city abbreviation from the city name.
+ * Uses first, middle, and last consonants of the name.
+ * Example: Dharmanagar → D, M, R → "DMR"
+ */
+function getCityCode(cityName: string): string {
+    const consonants = cityName
+        .toUpperCase()
+        .split("")
+        .filter((ch) => "BCDFGHJKLMNPQRSTVWXYZ".includes(ch));
+
+    if (consonants.length === 0) {
+        return cityName.substring(0, 3).toUpperCase().padEnd(3, "X");
+    }
+    if (consonants.length <= 3) {
+        return consonants.join("").padEnd(3, "X");
+    }
+
+    // First consonant, middle consonant, last consonant
+    const first = consonants[0];
+    const middle = consonants[Math.floor(consonants.length / 2)];
+    const last = consonants[consonants.length - 1];
+    return `${first}${middle}${last}`;
+}
+
 export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFormProps) {
     const router = useRouter();
     const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+
+    // Determine if we're coming from suggestion flow (has initialData but no id)
+    const isFromSuggestion = !!(initialData && !initialData.id && (initialData.address || initialData.cityId));
 
     const fetchCurrentLocation = async () => {
         setIsFetchingLocation(true);
@@ -73,6 +102,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
             facing: initialData.facing || undefined,
             landmark: initialData.landmark || undefined,
             notes: initialData.notes || undefined,
+            images: (initialData as any).images || [],
         }
         : {
             code: "",
@@ -87,6 +117,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
             cityId: "",
             holdingTypeId: "",
             hsnCodeId: "",
+            images: [],
         };
 
     const form = useForm<HoldingFormData>({
@@ -117,14 +148,26 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
         }
     };
 
-    // Auto generate code for new holdings
+    // Watch cityId to generate code based on city
+    const watchedCityId = form.watch("cityId");
+
+    // Generate holding code based on selected city
     useEffect(() => {
-        if (!initialData?.id && !form.getValues("code")) {
-            const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
-            const timeStr = Date.now().toString().slice(-4);
-            form.setValue("code", `HLD-${randomStr}-${timeStr}`);
+        if (!initialData?.id) {
+            const selectedCity = cities.find((c) => c.id === watchedCityId);
+            if (selectedCity) {
+                const cityCode = getCityCode(selectedCity.name);
+                const seq = String(Math.floor(Math.random() * 99) + 1).padStart(2, "0");
+                const rand = String(Math.floor(Math.random() * 9000) + 1000);
+                form.setValue("code", `HUD-${cityCode}${seq}-${rand}`);
+            } else if (!form.getValues("code")) {
+                // Fallback if no city selected yet
+                const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+                const time = Date.now().toString().slice(-4);
+                form.setValue("code", `HUD-${rand}-${time}`);
+            }
         }
-    }, [initialData?.id, form]);
+    }, [watchedCityId, initialData?.id, form, cities]);
 
     // Calculate area automatically
     const width = form.watch("width");
@@ -138,6 +181,12 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
             }
         }
     }, [width, height, form]);
+
+    // Get selected HSN code description for display
+    const watchedHsnCodeId = form.watch("hsnCodeId");
+    const selectedHsnCode = useMemo(() => {
+        return hsnCodes.find((c) => c.id === watchedHsnCodeId);
+    }, [watchedHsnCodeId, hsnCodes]);
 
     return (
         <Form {...form}>
@@ -316,21 +365,30 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                         name="hsnCodeId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>HSN Code</FormLabel>
+                                <FormLabel>HSN/SAC Code</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select HSN code" />
+                                            <SelectValue placeholder="Select HSN/SAC code" />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                         {hsnCodes.map((code) => (
                                             <SelectItem key={code.id} value={code.id}>
-                                                {code.code} ({String(code.gstRate)}%)
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{code.code} ({String(code.gstRate)}%)</span>
+                                                    <span className="text-xs text-muted-foreground">{code.description}</span>
+                                                </div>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {/* Show selected HSN/SAC description below the select */}
+                                {selectedHsnCode && (
+                                    <p className="text-xs text-muted-foreground mt-1 px-1">
+                                        <span className="font-medium">Description:</span> {selectedHsnCode.description}
+                                    </p>
+                                )}
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -476,6 +534,34 @@ export function HoldingForm({ initialData, cities, types, hsnCodes }: HoldingFor
                             </FormItem>
                         )}
                     />
+
+                    {/* Image Upload Section */}
+                    <div className="col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="images"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <MultiPhotoUpload
+                                        label={`Holding Images ${isFromSuggestion ? "(Auto-filled from suggestion)" : ""}`}
+                                        value={field.value || []}
+                                        onChange={(urls) => field.onChange(urls)}
+                                        error={form.formState.errors.images?.message as string | undefined}
+                                        maxFiles={5}
+                                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        {isFromSuggestion && (form.getValues("images")?.length ?? 0) > 0 && (
+                            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M20 6 9 17l-5-5"/>
+                                </svg>
+                                Images auto-filled from suggestion. You can add or remove images.
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">

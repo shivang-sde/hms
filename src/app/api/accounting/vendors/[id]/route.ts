@@ -35,13 +35,39 @@ export async function PUT(
 ) {
     try {
         const session = await auth();
-        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         const { id } = await params;
         const body = await request.json();
         const parsed = vendorSchema.parse(body);
 
-        const vendor = await (prisma as any).vendor.update({ where: { id }, data: parsed });
+        // Transform relation IDs into Prisma connect objects
+        const prismaData: any = {
+            name: parsed.name,
+            contactPerson: parsed.contactPerson,
+            email: parsed.email,
+            phone: parsed.phone,
+            gstNumber: parsed.gstNumber,
+            panNumber: parsed.panNumber,
+            address: parsed.address,
+            isActive: parsed.isActive,
+            kycDocumentUrl: parsed.kycDocumentUrl,
+            agreementDocumentUrl: parsed.agreementDocumentUrl,
+            // Relations
+            city: parsed.cityId ? { connect: { id: parsed.cityId } } : undefined,
+            ledger: parsed.ledgerId ? { connect: { id: parsed.ledgerId } } : undefined,
+            ownershipContract: parsed.ownershipContractId
+                ? { connect: { id: parsed.ownershipContractId } }
+                : undefined,
+        };
+
+        const vendor = await prisma.vendor.update({
+            where: { id },
+            data: prismaData,
+        });
+
         return NextResponse.json(vendor);
     } catch (error: any) {
         console.error("[PUT /api/accounting/vendors/[id]]", error);

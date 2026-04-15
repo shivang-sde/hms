@@ -66,6 +66,7 @@ model Holding {
   status             HoldingStatus       @default(AVAILABLE)
   maintenanceCycle   Int                 @default(90)
   notes              String?
+  images             String[]
   cityId             String
   holdingTypeId      String
   hsnCodeId          String
@@ -112,24 +113,26 @@ model OwnershipContract {
 }
 
 model Client {
-  id            String    @id @default(cuid())
-  name          String
-  contactPerson String
-  email         String?
-  phone         String
-  gstNumber     String?
-  panNumber     String?
-  address       String
-  isActive      Boolean   @default(true)
-  cityId        String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  ledgerId      String?
-  bookings      Booking[]
-  city          City?     @relation(fields: [cityId], references: [id])
-  ledger        Ledger?   @relation(fields: [ledgerId], references: [id])
-  invoices      Invoice[]
-  receipts      Receipt[]
+  id                   String    @id @default(cuid())
+  name                 String
+  contactPerson        String
+  email                String?
+  phone                String
+  gstNumber            String?
+  panNumber            String?
+  address              String
+  isActive             Boolean   @default(true)
+  cityId               String?
+  kycDocumentUrl       String?
+  agreementDocumentUrl String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  ledgerId             String?
+  bookings             Booking[]
+  city                 City?     @relation(fields: [cityId], references: [id])
+  ledger               Ledger?   @relation(fields: [ledgerId], references: [id])
+  invoices             Invoice[]
+  receipts             Receipt[]
 
   @@map("clients")
 }
@@ -436,24 +439,26 @@ model JournalLine {
 }
 
 model Vendor {
-  id                  String             @id @default(cuid())
-  name                String
-  contactPerson       String?
-  email               String?
-  phone               String
-  gstNumber           String?
-  panNumber           String?
-  address             String
-  isActive            Boolean            @default(true)
-  ownershipContractId String?
-  cityId              String?
-  ledgerId            String
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  payments            Payment[]
-  city                City?              @relation(fields: [cityId], references: [id])
-  ledger              Ledger             @relation("VendorLedger", fields: [ledgerId], references: [id])
-  ownershipContract   OwnershipContract? @relation(fields: [ownershipContractId], references: [id])
+  id                   String             @id @default(cuid())
+  name                 String
+  contactPerson        String?
+  email                String?
+  phone                String
+  gstNumber            String?
+  panNumber            String?
+  address              String
+  isActive             Boolean            @default(true)
+  ownershipContractId  String?
+  cityId               String?
+  ledgerId             String
+  kycDocumentUrl       String?
+  agreementDocumentUrl String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  payments             Payment[]
+  city                 City?              @relation(fields: [cityId], references: [id])
+  ledger               Ledger             @relation("VendorLedger", fields: [ledgerId], references: [id])
+  ownershipContract    OwnershipContract? @relation(fields: [ownershipContractId], references: [id])
 
   @@map("vendors")
 }

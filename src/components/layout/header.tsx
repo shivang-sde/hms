@@ -17,6 +17,7 @@ import { logout } from "@/actions/auth";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { SidebarContent } from "./sidebar";
 import { useState } from "react";
+import { HoardingSearch } from "@/components/shared/hoarding-search";
 
 export function Header() {
     const { setTheme, theme } = useTheme();
@@ -42,14 +43,18 @@ export function Header() {
                     </SheetContent>
                 </Sheet>
 
-                <div>
+                <div className="hidden sm:block">
                     <h2 className="text-lg font-semibold tracking-tight">
                         HMS
                     </h2>
-                    <p className="text-xs text-muted-foreground hidden sm:block">
+                    <p className="text-xs text-muted-foreground">
                         {userRole === "ADMIN" ? "Administrator Portal" : "Staff Portal"}
                     </p>
                 </div>
+            </div>
+            
+            <div className="flex-1 flex justify-center px-4">
+                <HoardingSearch />
             </div>
 
             <div className="flex items-center gap-1 md:gap-2">

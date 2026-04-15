@@ -10,6 +10,8 @@ import { MapPin, Ruler, Lightbulb, Clock, Pencil, CalendarClock, Navigation } fr
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
+import Image from "next/image";
+import { PhotoGallery } from "@/components/shared/photo-gallery";
 
 interface HoldingDetailsPageProps {
     params: {
@@ -158,6 +160,21 @@ export default async function HoldingDetailsPage({ params }: HoldingDetailsPageP
                         </CardContent>
                     </Card>
                 )}
+
+
+                {/* Images */}
+                <Card className="col-span-2">
+                    <CardHeader>
+                        <CardTitle className="text-base">Images</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {holding.images && holding.images.length > 0 ? (
+                            <PhotoGallery photos={holding.images.filter((url: string) => url)} />
+                        ) : (
+                            <p className="text-muted-foreground text-sm">No images available for this holding.</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
