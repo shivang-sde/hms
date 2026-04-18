@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate, formatCurrency, formatEnum } from "@/lib/utils";
 import { FileText, Pencil, User, Building2, IndianRupee, CalendarDays, Paperclip, Download } from "lucide-react";
 import Link from "next/link";
 
