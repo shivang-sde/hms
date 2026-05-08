@@ -12,12 +12,26 @@ export async function GET() {
                 hsnCode: true,
                 vendor: { select: { id: true, name: true, phone: true } },
                 inspections: true,
-                holdingPhotos: true,
-                contracts: { select: { id: true, status: true } },
+                holdingPhotos: {
+                    take: 3, // Limit to a few recent photos
+                    orderBy: { createdAt: "desc" }
+                },
+                ownershipContracts: { // ← Correct relation name
+                    select: {
+                        id: true,
+                        status: true,
+                        startDate: true,
+                        endDate: true,
+                        rentAmount: true,
+                        contractType: true,
+                        vendorId: true
+                    },
+                    orderBy: { startDate: "desc" }
+                },
             } as any,
             orderBy: { createdAt: "desc" },
         });
-        
+
         // Transform for backward compatibility
         const response = holdings.map(h => ({
             ...h,
@@ -26,7 +40,7 @@ export async function GET() {
                 ...((h as any).holdingPhotos || []).map((p: any) => p.url)
             ]
         }));
-        
+
         return NextResponse.json(response);
     } catch (error) {
         console.error("[GET /api/holdings]", error);
@@ -74,7 +88,7 @@ export async function POST(request: NextRequest) {
 
                 await tx.locationSuggestion.update({
                     where: { id: suggestionId },
-                    data: { 
+                    data: {
                         holdingId: newHolding.id,
                         convertedAt: new Date(),
                     }
