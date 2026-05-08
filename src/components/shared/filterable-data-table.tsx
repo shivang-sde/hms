@@ -64,6 +64,8 @@ interface FilterableDataTableProps<T> {
     searchFields?: SearchFieldConfig[];
     /** Dropdown filter configurations */
     filters?: FilterConfig[];
+    /** Extra actions to render in the filter bar (e.g. ExportButton) */
+    renderActions?: (filteredData: T[]) => React.ReactNode;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -86,6 +88,7 @@ export function FilterableDataTable<T extends { id?: string }>({
     searchPlaceholder = "Search...",
     searchFields = [],
     filters = [],
+    renderActions,
 }: FilterableDataTableProps<T>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterValues, setFilterValues] = useState<Record<string, string>>(() => {
@@ -202,6 +205,13 @@ export function FilterableDataTable<T extends { id?: string }>({
                             <X className="h-4 w-4 mr-1" />
                             Clear
                         </Button>
+                    )}
+
+                    {/* Extra Actions (e.g. Export) */}
+                    {renderActions && (
+                        <div className="sm:ml-auto">
+                            {renderActions(filteredData)}
+                        </div>
                     )}
                 </div>
             )}

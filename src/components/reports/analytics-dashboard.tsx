@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/shared/export-button";
 
 interface Props {
   overview: AnalyticsOverview | null;
@@ -323,9 +324,25 @@ export function AnalyticsDashboardClient({ overview, error }: Props) {
               <ClientRevenueBarChart data={clientData.clients} />
 
               <Card className="border-border/50">
-                <CardHeader>
-                  <CardTitle className="text-base font-semibold">Client Summary</CardTitle>
-                  <CardDescription>All active clients with booking and financial details</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-base font-semibold">Client Summary</CardTitle>
+                    <CardDescription>All active clients with booking and financial details</CardDescription>
+                  </div>
+                  <ExportButton
+                    title="Client Revenue Summary"
+                    data={clientData.clients}
+                    columns={[
+                      { header: "Client", key: "clientName" },
+                      { header: "Bookings", key: "totalBookings", format: "number" },
+                      { header: "Active", key: "activeBookings", format: "number" },
+                      { header: "Invoiced", key: "totalInvoiced", format: "currency" },
+                      { header: "Paid", key: "totalPaid", format: "currency" },
+                      { header: "Pending", key: "totalPending", format: "currency" },
+                      { header: "Avg Monthly", key: "avgMonthlySpend", format: "currency" },
+                      { header: "Invoices", key: "invoiceCount", format: "number" },
+                    ]}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -426,9 +443,25 @@ export function AnalyticsDashboardClient({ overview, error }: Props) {
               />
 
               <Card className="border-border/50">
-                <CardHeader>
-                  <CardTitle className="text-base font-semibold">Holdings Detail</CardTitle>
-                  <CardDescription>Per-holding status, tasks, maintenance, and revenue</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-base font-semibold">Holdings Detail</CardTitle>
+                    <CardDescription>Per-holding status, tasks, maintenance, and revenue</CardDescription>
+                  </div>
+                  <ExportButton
+                    title="Holdings Analytical Report"
+                    data={holdingData.holdings}
+                    columns={[
+                      { header: "Code", key: "code" },
+                      { header: "Name", key: "name" },
+                      { header: "City", key: "city" },
+                      { header: "Status", key: "status" },
+                      { header: "Illumination", key: "illumination" },
+                      { header: "Total Tasks", key: "totalTasks", format: "number" },
+                      { header: "Latest Condition", key: "latestCondition" },
+                      { header: "Revenue", key: "revenue", format: "currency" },
+                    ]}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -528,12 +561,25 @@ export function AnalyticsDashboardClient({ overview, error }: Props) {
               <div className="grid gap-6 lg:grid-cols-2">
                 {/* Recent Maintenance Records */}
                 <Card className="border-border/50">
-                  <CardHeader>
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      <Wrench className="h-4 w-4 text-amber-500" />
-                      Recent Maintenance
-                    </CardTitle>
-                    <CardDescription>Latest maintenance activities</CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <div>
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <Wrench className="h-4 w-4 text-amber-500" />
+                        Recent Maintenance
+                      </CardTitle>
+                      <CardDescription>Latest maintenance activities</CardDescription>
+                    </div>
+                    <ExportButton
+                      title="Recent Maintenance History"
+                      data={maintenanceData.recentRecords}
+                      columns={[
+                        { header: "Holding", key: "holdingCode" },
+                        { header: "Type", key: "maintenanceType" },
+                        { header: "Cost", key: "cost", format: "currency" },
+                        { header: "Date", key: "performedDate", format: "date" },
+                        { header: "Status", key: "status" },
+                      ]}
+                    />
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
@@ -670,9 +716,21 @@ export function AnalyticsDashboardClient({ overview, error }: Props) {
 
               {/* Completion Metrics Table */}
               <Card className="border-border/50">
-                <CardHeader>
-                  <CardTitle className="text-base font-semibold">Task Completion Metrics</CardTitle>
-                  <CardDescription>Average completion time and task counts by type</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-base font-semibold">Task Completion Metrics</CardTitle>
+                    <CardDescription>Average completion time and task counts by type</CardDescription>
+                  </div>
+                  <ExportButton
+                    title="Task Completion Metrics"
+                    data={taskData.completionMetrics}
+                    columns={[
+                      { header: "Task Type", key: "taskType" },
+                      { header: "Total Tasks", key: "totalTasks", format: "number" },
+                      { header: "Completed", key: "completedTasks", format: "number" },
+                      { header: "Avg Days", key: "avgCompletionDays", format: "number" },
+                    ]}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -728,9 +786,22 @@ export function AnalyticsDashboardClient({ overview, error }: Props) {
               {/* Cost Variance Table */}
               {taskData.costVariance.length > 0 && (
                 <Card className="border-border/50">
-                  <CardHeader>
-                    <CardTitle className="text-base font-semibold">Cost Variance Analysis</CardTitle>
-                    <CardDescription>Estimated vs actual costs by task type</CardDescription>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <div>
+                      <CardTitle className="text-base font-semibold">Cost Variance Analysis</CardTitle>
+                      <CardDescription>Estimated vs actual costs by task type</CardDescription>
+                    </div>
+                    <ExportButton
+                      title="Task Cost Variance Report"
+                      data={taskData.costVariance}
+                      columns={[
+                        { header: "Task Type", key: "taskType" },
+                        { header: "Task Count", key: "taskCount", format: "number" },
+                        { header: "Est. Cost", key: "totalEstimatedCost", format: "currency" },
+                        { header: "Actual Cost", key: "totalActualCost", format: "currency" },
+                        { header: "Variance %", key: "variancePercent", format: "number" },
+                      ]}
+                    />
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">

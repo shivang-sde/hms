@@ -9,6 +9,8 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { Users, Phone, Mail, MapPin, Receipt, CalendarClock, Pencil, Paperclip, FileText, Download } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { ClientDeleteButton } from "@/components/clients/client-delete-button";
+
 
 interface ClientDetailsPageProps {
     params: {

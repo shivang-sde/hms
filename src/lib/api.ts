@@ -1,7 +1,12 @@
+import { recordActivity } from "@/components/auth/session-timeout";
+
 export async function apiFetch<T = unknown>(
     url: string,
     options?: RequestInit & { revalidate?: number },
 ): Promise<T> {
+    if (typeof window !== "undefined") {
+        recordActivity();
+    }
 
     let finalUrl = url;
 

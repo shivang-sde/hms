@@ -192,3 +192,18 @@ export interface AnalyticsOverview {
   tasksByType: { type: string; count: number }[];
   topClients: { name: string; revenue: number }[];
 }
+
+// GST Report
+export interface GstReportRow {
+  date: string;
+  invoiceNumber: string;
+  partyName: string;
+  gstin: string;
+  description: string;
+  hsnCode: string;
+  taxableAmount: number;
+  integratedTax: number;
+  centralTax: number;
+  stateTax: number;
+  narration: string;
+}

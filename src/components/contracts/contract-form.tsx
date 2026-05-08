@@ -157,6 +157,7 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
         ? {
             contractNumber: initialData.contractNumber,
             vendorId: initialData.vendorId || "",
+            contractType: initialData.contractType || "ASSET_RENTING",
             rentAmount: Number(initialData.rentAmount),
             rentCycle: initialData.rentCycle,
             startDate: new Date(initialData.startDate),
@@ -170,6 +171,7 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
         : {
             contractNumber: "",
             vendorId: "",
+            contractType: "ASSET_RENTING",
             rentAmount: 0,
             rentCycle: "MONTHLY",
             startDate: new Date(),
@@ -182,10 +184,39 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
         resolver: zodResolver(ownershipContractSchema) as any,
         defaultValues: defaultValues as any,
     });
+    
+    const watchedContractType = useWatch({ control: form.control, name: "contractType" });
     const selectedVendorId = useWatch({ control: form.control, name: "vendorId" });
-    const filteredHoldings = selectedVendorId
-        ? holdings.filter((holding: any) => holding.vendorId === selectedVendorId)
-        : [];
+
+    // Filter Vendors based on Contract Type
+    const filteredVendors = vendors.filter((v: any) => {
+        if (watchedContractType === "ASSET_RENTING") return v.vendorType === "AGENCY";
+        if (watchedContractType === "SPACE_RENTING") return v.vendorType === "LANDLORD";
+        return true;
+    });
+
+    // Filter Holdings based on Contract Type and Vendor
+    const filteredHoldings = holdings.filter((holding: any) => {
+        // Rule: A hoarding with ACTIVE contract must NOT appear (unless it's the current one being edited)
+        const hasActiveContract = holding.contracts?.some((c: any) => c.status === "ACTIVE" && c.id !== initialData?.id);
+        if (hasActiveContract) return false;
+
+        if (watchedContractType === "ASSET_RENTING") {
+            return selectedVendorId ? holding.vendorId === selectedVendorId : true;
+        }
+        if (watchedContractType === "SPACE_RENTING") {
+            return holding.assetType === "OWNED";
+        }
+        return true;
+    });
+
+    // Reset fields when contract type changes
+    useEffect(() => {
+        if (!initialData) {
+            form.setValue("vendorId", "");
+            form.setValue("holdingId", "");
+        }
+    }, [watchedContractType, form, initialData]);
 
     // Auto-generate contract number for new contracts
     useEffect(() => {
@@ -224,6 +255,28 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                         control={form.control}
+                        name="contractType"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Contract Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="ASSET_RENTING">Asset Renting (Agency)</SelectItem>
+                                        <SelectItem value="SPACE_RENTING">Space Renting (Landlord)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
                         name="contractNumber"
                         render={({ field }) => (
                             <FormItem>
@@ -250,7 +303,7 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
                                             form.setValue("holdingId", "");
                                         }
                                     }}
-                                    defaultValue={field.value}
+                                    value={field.value}
                                 >
                                     <FormControl>
                                         <SelectTrigger className="max-w-full">
@@ -258,9 +311,9 @@ export function ContractForm({ initialData, holdings, vendors }: ContractFormPro
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {vendors.map((v: any) => (
+                                        {filteredVendors.map((v: any) => (
                                             <SelectItem key={v.id} value={v.id}>
-                                                {v.name}
+                                                {v.name} ({v.vendorType})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

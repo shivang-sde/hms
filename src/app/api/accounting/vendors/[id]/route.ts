@@ -45,9 +45,34 @@ export async function PUT(
         const body = await request.json();
         const parsed = vendorSchema.parse(body);
 
+        // Duplicate Check: PAN (excluding current)
+        const existingPan = await (prisma as any).vendor.findFirst({
+            where: { 
+                panNumber: parsed.panNumber,
+                NOT: { id }
+            },
+        });
+        if (existingPan) {
+            return NextResponse.json({ error: "Vendor with this PAN already exists" }, { status: 400 });
+        }
+
+        // Duplicate Check: GSTIN (if present, excluding current)
+        if (parsed.gstNumber) {
+            const existingGst = await (prisma as any).vendor.findFirst({
+                where: { 
+                    gstNumber: parsed.gstNumber,
+                    NOT: { id }
+                },
+            });
+            if (existingGst) {
+                return NextResponse.json({ error: "Vendor with this GSTIN already exists" }, { status: 400 });
+            }
+        }
+
         // Transform relation IDs into Prisma connect objects
         const prismaData: any = {
             name: parsed.name,
+            vendorType: parsed.vendorType,
             contactPerson: parsed.contactPerson,
             email: parsed.email,
             phone: parsed.phone,
@@ -55,12 +80,14 @@ export async function PUT(
             panNumber: parsed.panNumber,
             address: parsed.address,
             isActive: parsed.isActive,
+            accountNumber: parsed.accountNumber,
+            ifsc: parsed.ifsc,
+            bankName: parsed.bankName,
             kycDocumentUrl: parsed.kycDocumentUrl,
             agreementDocumentUrl: parsed.agreementDocumentUrl,
             // Relations
             city: parsed.cityId ? { connect: { id: parsed.cityId } } : undefined,
             ledger: parsed.ledgerId ? { connect: { id: parsed.ledgerId } } : undefined,
-               
         };
 
         const vendor = await prisma.vendor.update({
@@ -75,5 +102,54 @@ export async function PUT(
             return NextResponse.json({ error: error.errors }, { status: 400 });
         }
         return NextResponse.json({ error: "Failed to update vendor" }, { status: 500 });
+    }
+}
+
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+) {
+    try {
+        const session = await auth();
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = await params;
+
+        // Safety checks
+        const vendor = await prisma.vendor.findUnique({
+            where: { id },
+            include: {
+                ledger: {
+                    include: {
+                        _count: {
+                            select: { journalLines: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!vendor) {
+            return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
+        }
+
+        if (vendor.ledger) {
+            if (vendor.ledger._count.journalLines > 0) {
+                return NextResponse.json({ 
+                    error: "Cannot delete vendor. Ledger has transactions. Delete transactions first." 
+                }, { status: 400 });
+            }
+            return NextResponse.json({ 
+                error: "Cannot delete vendor. Delete linked account (ledger) first." 
+            }, { status: 400 });
+        }
+
+        await prisma.vendor.delete({ where: { id } });
+        return new NextResponse(null, { status: 204 });
+    } catch (error: any) {
+        console.error("[DELETE /api/accounting/vendors/[id]]", error);
+        return NextResponse.json({ error: error.message || "Failed to delete vendor" }, { status: 500 });
     }
 }

@@ -2,6 +2,7 @@
 
 import { FilterableDataTable } from "@/components/shared/filterable-data-table";
 import { InvoiceListColumns, ReceiptListColumns } from "@/components/finance/columns";
+import { ExportButton } from "@/components/shared/export-button";
 
 const INVOICE_STATUS_OPTIONS = [
     { value: "ALL", label: "All Statuses" },
@@ -48,6 +49,20 @@ export function BillingListClient({ type, data }: BillingListClientProps) {
                         accessor: (row: any) => row.status,
                     },
                 ]}
+                renderActions={(filteredData) => (
+                    <ExportButton
+                        title="Invoices List"
+                        data={filteredData}
+                        columns={[
+                            { header: "Invoice #", key: "invoiceNumber" },
+                            { header: "Date", key: "invoiceDate", format: "date" },
+                            { header: "Client", key: "client.name" },
+                            { header: "Amount", key: "totalAmount", format: "currency" },
+                            { header: "Tax", key: "totalTax", format: "currency" },
+                            { header: "Status", key: "status" },
+                        ]}
+                    />
+                )}
             />
         );
     }
@@ -71,6 +86,20 @@ export function BillingListClient({ type, data }: BillingListClientProps) {
                     accessor: (row: any) => row.paymentMode,
                 },
             ]}
+            renderActions={(filteredData) => (
+                <ExportButton
+                    title="Receipts List"
+                    data={filteredData}
+                    columns={[
+                        { header: "Receipt #", key: "receiptNumber" },
+                        { header: "Date", key: "receiptDate", format: "date" },
+                        { header: "Client", key: "client.name" },
+                        { header: "Amount", key: "amount", format: "currency" },
+                        { header: "Mode", key: "paymentMode" },
+                        { header: "Ref #", key: "referenceNumber" },
+                    ]}
+                />
+            )}
         />
     );
 }

@@ -6,6 +6,7 @@ import { CalendarIcon, Download, ArrowLeft, Loader2, BookOpen } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { ExportButton } from "@/components/shared/export-button";
 
 interface Transaction {
     id: string;
@@ -296,6 +297,28 @@ export function LedgerStatement({ ledgerId }: { ledgerId: string }) {
                         <Download className="h-4 w-4 mr-1" />
                         Print
                     </Button>
+                    {data && (
+                        <ExportButton
+                            title={`Ledger Statement - ${data.ledger.name}`}
+                            data={[
+                                { description: "Opening Balance", runningBalance: data.openingBalance },
+                                ...rows,
+                                { description: "Closing Balance", debit: totalDebit, credit: totalCredit, runningBalance: closingBalance }
+                            ]}
+                            columns={[
+                                { header: "Date", key: "date", format: "date" },
+                                { header: "Particulars", key: "description" },
+                                { header: "Voucher No", key: "voucherNo" },
+                                { header: "Debit", key: "debit", format: "currency" },
+                                { header: "Credit", key: "credit", format: "currency" },
+                                { header: "Balance", key: "runningBalance", format: "currency" },
+                            ]}
+                            filters={{
+                                "Ledger": `${data.ledger.name} (${data.ledger.code})`,
+                                "Period": `${format(new Date(startDate), 'dd-MM-yyyy')} to ${format(new Date(endDate), 'dd-MM-yyyy')}`
+                            }}
+                        />
+                    )}
                 </div>
             </div>
 

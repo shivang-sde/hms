@@ -11,6 +11,12 @@ const CONTRACT_STATUS_OPTIONS = [
     { value: "PENDING", label: "Pending" },
 ];
 
+const CONTRACT_TYPE_OPTIONS = [
+    { value: "ALL", label: "All Types" },
+    { value: "ASSET_RENTING", label: "Asset Renting" },
+    { value: "SPACE_RENTING", label: "Space Renting" },
+];
+
 interface ContractsListClientProps {
     contracts: any[];
 }
@@ -35,6 +41,12 @@ export function ContractsListClient({ contracts }: ContractsListClientProps) {
                     label: "Status",
                     options: CONTRACT_STATUS_OPTIONS,
                     accessor: (row: any) => row.status,
+                },
+                {
+                    key: "contractType",
+                    label: "Contract Type",
+                    options: CONTRACT_TYPE_OPTIONS,
+                    accessor: (row: any) => row.contractType,
                 },
             ]}
         />

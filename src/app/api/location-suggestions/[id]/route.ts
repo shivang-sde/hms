@@ -7,7 +7,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         const { id } = await params;
         const suggestion = await prisma.locationSuggestion.findUnique({
             where: { id },
-            include: { city: true, photos: true }
+            include: { 
+                city: true, 
+                photos: true,
+                suggestedBy: { select: { name: true, email: true } }
+            }
         });
         if (!suggestion) return NextResponse.json({ error: "Not found" }, { status: 404 });
         return NextResponse.json(suggestion);

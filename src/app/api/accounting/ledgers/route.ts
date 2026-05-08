@@ -10,6 +10,8 @@ export async function GET() {
             include: {
                 parent: { select: { id: true, name: true, code: true } },
                 children: { select: { id: true, name: true, code: true, type: true, isGroup: true } },
+                clients: { select: { phone: true } },
+                vendors: { select: { phone: true } },
                 _count: { select: { journalLines: true } },
             },
         });

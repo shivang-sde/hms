@@ -44,6 +44,7 @@ const reportsSubmenus = [
     { name: "Analytics", href: "/reports/analytics", icon: BarChart3, roles: ["ADMIN"] },
     { name: "Ledgers", href: "/accounting/ledgers", icon: Layers, roles: ["ADMIN"] },
     { name: "Trial Balance", href: "/reports/trial-balance", icon: FileText, roles: ["ADMIN"] },
+    { name: "GST Report", href: "/reports/gst", icon: FileText, roles: ["ADMIN"] },
 ];
 
 const generalSettingsSubmenus = [

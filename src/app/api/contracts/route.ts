@@ -36,11 +36,11 @@ export async function POST(request: NextRequest) {
         }
         if (parsed.status === "ACTIVE") {
             const existingActive = await prisma.ownershipContract.findFirst({
-                where: { vendorId: parsed.vendorId, holdingId: parsed.holdingId, status: "ACTIVE" },
+                where: { holdingId: parsed.holdingId, status: "ACTIVE" },
                 select: { id: true },
             });
             if (existingActive) {
-                return NextResponse.json({ error: "An active contract already exists for this vendor and holding" }, { status: 409 });
+                return NextResponse.json({ error: "An active contract already exists for this hoarding" }, { status: 409 });
             }
         }
         const contract = await prisma.ownershipContract.create({
@@ -48,9 +48,14 @@ export async function POST(request: NextRequest) {
                 ...parsed,
             },
         });
+
+        // Update holding status based on contract type
         await prisma.holding.update({
             where: { id: parsed.holdingId },
-            data: { vendorId: parsed.vendorId, assetType: "RENTED" },
+            data: { 
+                vendorId: parsed.vendorId, 
+                assetType: parsed.contractType === "SPACE_RENTING" ? "OWNED" : "RENTED" 
+            },
         });
         return NextResponse.json(contract, { status: 201 });
     } catch (error: any) {

@@ -2,6 +2,7 @@
 
 import { FilterableDataTable } from "@/components/shared/filterable-data-table";
 import { BookingListColumns } from "@/components/bookings/columns";
+import { ExportButton } from "@/components/shared/export-button";
 
 const BOOKING_STATUS_OPTIONS = [
     { value: "ALL", label: "All Statuses" },
@@ -37,6 +38,21 @@ export function BookingsListClient({ bookings }: BookingsListClientProps) {
                     accessor: (row: any) => row.status,
                 },
             ]}
+            renderActions={(filteredData) => (
+                <ExportButton
+                    title="Bookings List"
+                    data={filteredData}
+                    columns={[
+                        { header: "Booking #", key: "bookingNumber" },
+                        { header: "Client", key: "client.name" },
+                        { header: "Holding", key: "holding.code" },
+                        { header: "Start Date", key: "startDate", format: "date" },
+                        { header: "End Date", key: "endDate", format: "date" },
+                        { header: "Total Amount", key: "totalAmount", format: "currency" },
+                        { header: "Status", key: "status" },
+                    ]}
+                />
+            )}
         />
     );
 }

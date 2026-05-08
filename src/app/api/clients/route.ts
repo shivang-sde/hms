@@ -27,46 +27,69 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const parsed = clientSchema.parse(body);
 
-        // Auto-create Ledger under "Sundry Debtors"
-        let debtorsGroup = await prisma.ledger.findFirst({
-            where: { name: "Sundry Debtors", isGroup: true }
-        });
-        
-        if (!debtorsGroup) {
-            debtorsGroup = await prisma.ledger.create({
-                data: {
-                    name: "Sundry Debtors",
-                    code: "SD-GROUP",
-                    type: "ASSET",
-                    isGroup: true,
-                    isReceivable: true
-                }
+        // 1. Duplicate checks for PAN and GSTIN
+        if (parsed.panNumber) {
+            const existingPan = await prisma.client.findFirst({
+                where: { panNumber: parsed.panNumber },
+                select: { id: true }
             });
+            if (existingPan) return NextResponse.json({ error: "Client with this PAN already exists" }, { status: 409 });
         }
 
-        const newLedger = await prisma.ledger.create({
-            data: {
-                name: `${parsed.name} - A/c`,
-                code: `CLI-${Date.now().toString().slice(-4)}`,
-                type: "ASSET",
-                isGroup: false,
-                isReceivable: true,
-                parentId: debtorsGroup.id
+        if (parsed.gstNumber && parsed.gstNumber.trim() !== "") {
+            const existingGst = await prisma.client.findFirst({
+                where: { gstNumber: parsed.gstNumber },
+                select: { id: true }
+            });
+            if (existingGst) return NextResponse.json({ error: "Client with this GSTIN already exists" }, { status: 409 });
+        }
+
+        // 2. Atomic Transaction: Create Ledger + Create Client
+        const client = await prisma.$transaction(async (tx) => {
+            // Find or create "Sundry Debtors" group
+            let debtorsGroup = await tx.ledger.findFirst({
+                where: { name: "Sundry Debtors", isGroup: true }
+            });
+            
+            if (!debtorsGroup) {
+                debtorsGroup = await tx.ledger.create({
+                    data: {
+                        name: "Sundry Debtors",
+                        code: "SD-GROUP",
+                        type: "ASSET",
+                        isGroup: true,
+                        isReceivable: true
+                    }
+                });
             }
+
+            // Create personal AR Ledger for the client
+            const newLedger = await tx.ledger.create({
+                data: {
+                    name: `${parsed.name} - A/c`,
+                    code: `CLI-${Date.now().toString().slice(-4)}`,
+                    type: "ASSET",
+                    isGroup: false,
+                    isReceivable: true,
+                    parentId: debtorsGroup.id
+                }
+            });
+
+            // Create Client and link to Ledger
+            return await tx.client.create({
+                data: {
+                    ...parsed,
+                    ledgerId: newLedger.id
+                }
+            });
         });
 
-        const client = await prisma.client.create({
-            data: {
-                ...parsed,
-                ledgerId: newLedger.id
-            }
-        });
         return NextResponse.json(client, { status: 201 });
     } catch (error: any) {
         console.error("[POST /api/clients]", error);
         if (error?.name === "ZodError") {
             return NextResponse.json({ error: error.errors }, { status: 400 });
         }
-        return NextResponse.json({ error: "Failed to create client" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Failed to create client" }, { status: 500 });
     }
 }

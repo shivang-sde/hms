@@ -13,6 +13,7 @@ export async function GET() {
                 vendor: { select: { id: true, name: true, phone: true } },
                 inspections: true,
                 holdingPhotos: true,
+                contracts: { select: { id: true, status: true } },
             } as any,
             orderBy: { createdAt: "desc" },
         });

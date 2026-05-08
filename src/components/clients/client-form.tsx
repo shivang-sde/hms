@@ -103,7 +103,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Company / Client Name</FormLabel>
+                                <FormLabel>Company / Client Name (Required)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="TechSolutions Pvt Ltd" {...field} />
                                 </FormControl>
@@ -116,7 +116,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="contactPerson"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Contact Person</FormLabel>
+                                <FormLabel>Contact Person (Required)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="John Doe" {...field} />
                                 </FormControl>
@@ -142,7 +142,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="phone"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Phone</FormLabel>
+                                <FormLabel>Phone (Required)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="+91 98765 43210" {...field} />
                                 </FormControl>
@@ -155,7 +155,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="gstNumber"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>GST Number</FormLabel>
+                                <FormLabel>GST Number (Optional)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="22AAAAA0000A1Z5" {...field} value={field.value || ""} />
                                 </FormControl>
@@ -168,7 +168,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="panNumber"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>PAN Number</FormLabel>
+                                <FormLabel>PAN Number (Required)</FormLabel>
                                 <FormControl>
                                     <Input placeholder="ABCDE1234F" {...field} value={field.value || ""} />
                                 </FormControl>
@@ -181,7 +181,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="address"
                         render={({ field }) => (
                             <FormItem className="col-span-2">
-                                <FormLabel>Address</FormLabel>
+                                <FormLabel>Address (Required)</FormLabel>
                                 <FormControl>
                                     <Textarea placeholder="Full billing address" {...field} />
                                 </FormControl>
@@ -195,7 +195,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                         name="cityId"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>City</FormLabel>
+                                <FormLabel>City (Required)</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>

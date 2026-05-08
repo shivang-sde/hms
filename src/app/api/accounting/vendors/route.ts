@@ -3,9 +3,22 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import { vendorSchema } from "@/lib/validations";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const { searchParams } = new URL(request.url);
+        const activeOnly = searchParams.get("activeOnly") === "true";
+        const all = searchParams.get("all") === "true";
+
+        const where: any = {};
+        if (activeOnly) {
+            where.isActive = true;
+        } else if (!all) {
+            // Default behavior if not explicitly asking for all
+            where.isActive = true;
+        }
+
         const vendors = await (prisma as any).vendor.findMany({
+            where,
             orderBy: { name: "asc" },
             include: {
                 city: true,
@@ -29,6 +42,24 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         const parsed = vendorSchema.parse(body);
+
+        // Duplicate Check: PAN
+        const existingPan = await (prisma as any).vendor.findFirst({
+            where: { panNumber: parsed.panNumber },
+        });
+        if (existingPan) {
+            return NextResponse.json({ error: "Vendor with this PAN already exists" }, { status: 400 });
+        }
+
+        // Duplicate Check: GSTIN (if present)
+        if (parsed.gstNumber) {
+            const existingGst = await (prisma as any).vendor.findFirst({
+                where: { gstNumber: parsed.gstNumber },
+            });
+            if (existingGst) {
+                return NextResponse.json({ error: "Vendor with this GSTIN already exists" }, { status: 400 });
+            }
+        }
 
         let targetLedgerId = parsed.ledgerId;
 

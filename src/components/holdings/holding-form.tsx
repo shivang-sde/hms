@@ -39,28 +39,15 @@ interface HoldingFormProps {
 }
 
 /**
- * Generate a 3-letter city abbreviation from the city name.
- * Uses first, middle, and last consonants of the name.
- * Example: Dharmanagar → D, M, R → "DMR"
+ * Generate a 4-letter abbreviation from a name.
+ * Example: Dehradun → DEHR, Billboards → BILL
  */
-function getCityCode(cityName: string): string {
-    const consonants = cityName
-        .toUpperCase()
-        .split("")
-        .filter((ch) => "BCDFGHJKLMNPQRSTVWXYZ".includes(ch));
-
-    if (consonants.length === 0) {
-        return cityName.substring(0, 3).toUpperCase().padEnd(3, "X");
-    }
-    if (consonants.length <= 3) {
-        return consonants.join("").padEnd(3, "X");
-    }
-
-    // First consonant, middle consonant, last consonant
-    const first = consonants[0];
-    const middle = consonants[Math.floor(consonants.length / 2)];
-    const last = consonants[consonants.length - 1];
-    return `${first}${middle}${last}`;
+function getAbbreviation(name: string, length: number = 4): string {
+    const cleaned = name.toUpperCase().replace(/[^A-Z]/g, "");
+    if (cleaned.length <= length) return cleaned.padEnd(length, "X");
+    
+    // Take first 4 characters for simple consistency
+    return cleaned.substring(0, length);
 }
 
 export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = [] }: HoldingFormProps) {
@@ -131,7 +118,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
         resolver: zodResolver(holdingSchema) as any,
         defaultValues: defaultValues as any,
     });
-    // ... rest of the file remains strictly same minus the initialData typing change above
+
     const onSubmit = async (data: HoldingFormData) => {
         try {
             if (initialData && initialData.id) { // Only update if we have a real ID, not just pre-filled data
@@ -159,26 +146,25 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
         }
     };
 
-    // Watch cityId to generate code based on city
     const watchedCityId = form.watch("cityId");
+    const watchedHoldingTypeId = form.watch("holdingTypeId");
 
-    // Generate holding code based on selected city
+    // Generate holding code based on selected type and city
     useEffect(() => {
         if (!initialData?.id) {
             const selectedCity = cities.find((c) => c.id === watchedCityId);
-            if (selectedCity) {
-                const cityCode = getCityCode(selectedCity.name);
-                const seq = String(Math.floor(Math.random() * 99) + 1).padStart(2, "0");
-                const rand = String(Math.floor(Math.random() * 9000) + 1000);
-                form.setValue("code", `HUD-${cityCode}${seq}-${rand}`);
-            } else if (!form.getValues("code")) {
-                // Fallback if no city selected yet
-                const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-                const time = Date.now().toString().slice(-4);
-                form.setValue("code", `HUD-${rand}-${time}`);
+            const selectedType = types.find((t) => t.id === watchedHoldingTypeId);
+            
+            if (selectedCity && selectedType) {
+                const cityPart = getAbbreviation(selectedCity.name);
+                const typePart = getAbbreviation(selectedType.name);
+                // For client-side "uniqueness" without a counter API, we use a random 4-digit string
+                // In a full production system, we'd fetch the next sequence from the DB
+                const seq = String(Math.floor(Math.random() * 9999) + 1).padStart(4, "0");
+                form.setValue("code", `${typePart}-${cityPart}-${seq}`);
             }
         }
-    }, [watchedCityId, initialData?.id, form, cities]);
+    }, [watchedCityId, watchedHoldingTypeId, initialData?.id, form, cities, types]);
 
     // Calculate area automatically
     const width = form.watch("width");

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { JournalExport } from "./journal-export";
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -31,12 +32,15 @@ export default async function JournalEntriesPage() {
                 title="Journal Entries"
                 description="View and manage accounting journal entries"
             >
-                <Link href="/accounting/journal-entries/new">
-                    <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Manual Entry
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <JournalExport entries={entries} />
+                    <Link href="/accounting/journal-entries/new">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Manual Entry
+                        </Button>
+                    </Link>
+                </div>
             </PageHeader>
 
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">

@@ -60,44 +60,67 @@ export const BookingListColumns = [
     },
 ];
 
+import { useState } from "react";
+import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog";
+
 function BookingActions({ booking }: { booking: Booking }) {
     const router = useRouter();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const handleDelete = async () => {
+        setIsDeleting(true);
         try {
             await apiFetch(`/api/bookings/${booking.id}`, { method: 'DELETE' });
             toast.success("Booking deleted successfully");
+            setShowDeleteDialog(false);
             router.refresh();
-        } catch (error) {
-            toast.error("Failed to delete booking");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to delete booking");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                    <Link href={`/bookings/${booking.id}`}>
-                        <Eye className="mr-2 h-4 w-4" /> View Details
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`/bookings/${booking.id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/bookings/${booking.id}`}>
+                            <Eye className="mr-2 h-4 w-4" /> View Details
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/bookings/${booking.id}/edit`}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                        onClick={() => setShowDeleteDialog(true)} 
+                        className="text-red-600 focus:text-red-600"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DeleteConfirmationDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleDelete}
+                isLoading={isDeleting}
+                title="Delete Booking"
+                description={`Are you sure you want to delete booking ${booking.bookingNumber}? This action cannot be undone.`}
+            />
+        </>
     );
 }

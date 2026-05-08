@@ -40,7 +40,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         if (parsed.status === "ACTIVE") {
             const existingActive = await prisma.ownershipContract.findFirst({
                 where: {
-                    vendorId: parsed.vendorId,
                     holdingId: parsed.holdingId,
                     status: "ACTIVE",
                     NOT: { id },
@@ -48,7 +47,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 select: { id: true },
             });
             if (existingActive) {
-                return NextResponse.json({ error: "An active contract already exists for this vendor and holding" }, { status: 409 });
+                return NextResponse.json({ error: "An active contract already exists for this hoarding" }, { status: 409 });
             }
         }
         const contract = await prisma.ownershipContract.update({
@@ -57,9 +56,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 ...parsed,
             },
         });
+
+        // Update holding status based on contract type
         await prisma.holding.update({
             where: { id: parsed.holdingId },
-            data: { vendorId: parsed.vendorId, assetType: "RENTED" },
+            data: { 
+                vendorId: parsed.vendorId, 
+                assetType: parsed.contractType === "SPACE_RENTING" ? "OWNED" : "RENTED" 
+            },
         });
         return NextResponse.json(contract);
     } catch (error: any) {

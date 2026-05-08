@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import { TrialBalanceExport } from "./trial-balance-client";
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,11 +18,14 @@ export default async function TrialBalancePage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Trial Balance</h1>
-                <p className="text-muted-foreground">
-                    Summary of all ledger balances — debits should equal credits
-                </p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Trial Balance</h1>
+                    <p className="text-muted-foreground">
+                        Summary of all ledger balances — debits should equal credits
+                    </p>
+                </div>
+                <TrialBalanceExport data={data} />
             </div>
 
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">

@@ -39,6 +39,7 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
     const defaultValues: Partial<VendorFormData> = initialData
         ? {
             name: initialData.name,
+            vendorType: (initialData.vendorType as "LANDLORD" | "AGENCY") || "LANDLORD",
             contactPerson: initialData.contactPerson || "",
             email: initialData.email || "",
             phone: initialData.phone,
@@ -48,11 +49,15 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
             isActive: initialData.isActive,
             cityId: initialData.cityId || undefined,
             ledgerId: initialData.ledgerId,
+            accountNumber: initialData.accountNumber || "",
+            ifsc: initialData.ifsc || "",
+            bankName: initialData.bankName || "",
             kycDocumentUrl: initialData.kycDocumentUrl || undefined,
             agreementDocumentUrl: initialData.agreementDocumentUrl || undefined,
         }
         : {
             name: "",
+            vendorType: "LANDLORD",
             contactPerson: "",
             email: "",
             phone: "",
@@ -62,6 +67,9 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
             isActive: true,
             cityId: undefined,
             ledgerId: "",
+            accountNumber: "",
+            ifsc: "",
+            bankName: "",
             kycDocumentUrl: undefined,
             agreementDocumentUrl: undefined,
         };
@@ -107,6 +115,31 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                         control={form.control}
+                        name="vendorType"
+                        render={({ field }) => (
+                            <FormItem className="col-span-2">
+                                <FormLabel>Vendor Type</FormLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select type" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="LANDLORD">Landlord</SelectItem>
+                                        <SelectItem value="AGENCY">Agency</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
                         name="name"
                         render={({ field }) => (
                             <FormItem>
@@ -126,7 +159,7 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                             <FormItem>
                                 <FormLabel>Contact Person</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Contact person name" {...field} />
+                                    <Input placeholder="Contact person name" {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -154,7 +187,7 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input type="email" placeholder="email@example.com" {...field} />
+                                    <Input type="email" placeholder="email@example.com" {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -166,9 +199,9 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                         name="gstNumber"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>GST Number</FormLabel>
+                                <FormLabel>GST Number (Optional)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="GSTIN" {...field} />
+                                    <Input placeholder="GSTIN" {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -180,9 +213,9 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                         name="panNumber"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>PAN Number</FormLabel>
+                                <FormLabel>PAN Number (Required)</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="PAN" {...field} />
+                                    <Input placeholder="ABCDE1234F" {...field} value={field.value || ""} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -230,6 +263,51 @@ export function VendorForm({ initialData, cities, ledgers }: VendorFormProps) {
                             </FormItem>
                         )}
                     />
+
+                    <div className="col-span-2 border-t pt-4">
+                        <p className="font-semibold text-sm mb-4">Bank Details</p>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <FormField
+                                control={form.control}
+                                name="bankName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Bank Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Bank Name" {...field} value={field.value || ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="accountNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Account Number</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Account Number" {...field} value={field.value || ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="ifsc"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>IFSC Code</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="IFSC Code" {...field} value={field.value || ""} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
 
 
 

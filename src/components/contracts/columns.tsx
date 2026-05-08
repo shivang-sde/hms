@@ -16,12 +16,21 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { formatDate, formatCurrency, formatEnum } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Badge } from "@/components/ui/badge";
 
 export const ContractListColumns = [
     {
         header: "Contract #",
         accessorKey: "contractNumber",
         className: "font-medium",
+    },
+    {
+        header: "Type",
+        cell: (row: any) => (
+            <Badge variant="outline" className="font-mono text-[10px]">
+                {row.contractType === "ASSET_RENTING" ? "ASSET" : "SPACE"}
+            </Badge>
+        ),
     },
     {
         header: "Vendor",

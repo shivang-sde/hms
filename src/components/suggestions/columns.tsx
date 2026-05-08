@@ -37,6 +37,15 @@ export const SuggestionListColumns = [
         cell: (row: any) => row.proposedRent ? formatCurrency(row.proposedRent.toString()) : "N/A",
     },
     {
+        header: "Suggested By",
+        cell: (row: any) => (
+            <div className="flex flex-col">
+                <span className="text-sm font-medium">{row.suggestedByName || "Legacy User"}</span>
+                <span className="text-[10px] text-muted-foreground">{row.suggestedBy?.email || ""}</span>
+            </div>
+        ),
+    },
+    {
         header: "Status",
         cell: (row: any) => <StatusBadge status={row.status} />,
     },

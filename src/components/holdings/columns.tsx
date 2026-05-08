@@ -3,6 +3,7 @@
 import { formatArea, formatEnum, cn } from "@/lib/utils";
 import { Holding } from "@prisma/client";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Eye, Pencil, Trash2, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +44,14 @@ export const HoldingListColumns = [
         cell: (row: any) => row.holdingType?.name || "N/A",
     },
     {
+        header: "Asset Type",
+        cell: (row: any) => (
+            <Badge variant="secondary" className="font-mono text-[10px]">
+                {row.assetType || "OWNED"}
+            </Badge>
+        ),
+    },
+    {
         header: "City",
         cell: (row: any) => row.city?.name || "N/A",
     },
@@ -65,55 +74,78 @@ export const HoldingListColumns = [
     },
 ];
 
+import { useState } from "react";
+import { DeleteConfirmationDialog } from "@/components/shared/delete-confirmation-dialog";
+
 function HoldingActions({ holding }: { holding: Holding }) {
     const router = useRouter();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const handleDelete = async () => {
+        setIsDeleting(true);
         try {
             await apiFetch(`/api/holdings/${holding.id}`, { method: 'DELETE' });
             toast.success("Holding deleted successfully");
+            setShowDeleteDialog(false);
             router.refresh();
-        } catch (error) {
-            toast.error("Failed to delete holding");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to delete holding");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                    <Link href={`/holdings/${holding.id}`}>
-                        <Eye className="mr-2 h-4 w-4" /> View Details
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`/holdings/${holding.id}/edit`}>
-                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                    </Link>
-                </DropdownMenuItem>
-                {holding.latitude && holding.longitude && (
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuItem asChild>
-                        <a
-                            href={`https://maps.google.com/?q=${holding.latitude},${holding.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <Navigation className="mr-2 h-4 w-4" /> Navigate
-                        </a>
+                        <Link href={`/holdings/${holding.id}`}>
+                            <Eye className="mr-2 h-4 w-4" /> View Details
+                        </Link>
                     </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/holdings/${holding.id}/edit`}>
+                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                        </Link>
+                    </DropdownMenuItem>
+                    {holding.latitude && holding.longitude && (
+                        <DropdownMenuItem asChild>
+                            <a
+                                href={`https://maps.google.com/?q=${holding.latitude},${holding.longitude}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Navigation className="mr-2 h-4 w-4" /> Navigate
+                            </a>
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                        onClick={() => setShowDeleteDialog(true)} 
+                        className="text-red-600 focus:text-red-600"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DeleteConfirmationDialog
+                isOpen={showDeleteDialog}
+                onClose={() => setShowDeleteDialog(false)}
+                onConfirm={handleDelete}
+                isLoading={isDeleting}
+                title="Delete Holding"
+                description={`Are you sure you want to delete holding ${holding.code}? This action cannot be undone.`}
+            />
+        </>
     );
 }

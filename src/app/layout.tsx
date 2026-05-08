@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Manage billboard holdings, advertisements, clients, bookings, and billing operations efficiently.",
 };
 
+import { SessionTimeout } from "@/components/auth/session-timeout";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -35,6 +37,10 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider session={session} >
+            <SessionTimeout
+              inactivityTimeout={process.env.SESSION_INACTIVITY_TIMEOUT ? Number(process.env.SESSION_INACTIVITY_TIMEOUT) : 1800000}
+              checkInterval={process.env.SESSION_CHECK_INTERVAL ? Number(process.env.SESSION_CHECK_INTERVAL) : 10000}
+            />
             <TooltipProvider>
               <LayoutWrapper key={session?.user?.id} >{children}</LayoutWrapper>
               <Toaster richColors position="top-right" />

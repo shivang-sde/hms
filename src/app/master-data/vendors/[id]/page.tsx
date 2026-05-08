@@ -9,6 +9,8 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { Building2, Phone, Mail, MapPin, Receipt, CalendarClock, Pencil, FileText, Download, Paperclip, IndianRupee } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { VendorDeleteButton } from "@/components/accounting/vendor-delete-button";
+
 
 interface VendorDetailsPageProps {
     params: {
@@ -39,12 +41,16 @@ export default async function VendorDetailsPage({ params }: VendorDetailsPagePro
                     icon={Building2}
                 />
                 <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                        {vendor.vendorType || "LANDLORD"}
+                    </Badge>
                     <StatusBadge status={vendor.isActive ? "ACTIVE" : "INACTIVE"} />
                     <Button asChild variant="outline" size="sm">
                         <Link href={`/master-data/vendors/${id}/edit`}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit
                         </Link>
                     </Button>
+                    <VendorDeleteButton vendorId={id} vendorName={vendor.name} />
                 </div>
             </div>
 
@@ -86,7 +92,7 @@ export default async function VendorDetailsPage({ params }: VendorDetailsPagePro
                 {/* Business Details */}
                 <Card>
                     <CardHeader>
-                        <CardTitle className="text-base">Business & Tax</CardTitle>
+                        <CardTitle className="text-base">Business & Ledger</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm">
                         <div>
@@ -96,6 +102,11 @@ export default async function VendorDetailsPage({ params }: VendorDetailsPagePro
                         <div>
                             <p className="text-muted-foreground mb-1">PAN Number</p>
                             <p className="font-medium uppercase">{vendor.panNumber || "Not Provided"}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground mb-1">AP Ledger</p>
+                            <p className="font-medium text-primary">{vendor.ledger?.name || "—"}</p>
+                            <p className="text-[10px] text-muted-foreground">{vendor.ledger?.code || "No code"}</p>
                         </div>
                         <Separator />
                         <div className="p-3 bg-muted/50 rounded-md">
@@ -108,6 +119,29 @@ export default async function VendorDetailsPage({ params }: VendorDetailsPagePro
                                 <span className="text-muted-foreground">Total Payments</span>
                                 <span className="font-bold">{vendor.payments?.length || 0}</span>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Bank Details */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                            <IndianRupee className="h-4 w-4" /> Bank Details
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground mb-1">Bank Name</p>
+                            <p className="font-medium">{vendor.bankName || "N/A"}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground mb-1">Account Number</p>
+                            <p className="font-medium font-mono">{vendor.accountNumber || "N/A"}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground mb-1">IFSC Code</p>
+                            <p className="font-medium font-mono uppercase">{vendor.ifsc || "N/A"}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -259,13 +293,13 @@ export default async function VendorDetailsPage({ params }: VendorDetailsPagePro
     );
 }
 
-function Badge({ children, variant = "default" }: { children: React.ReactNode, variant?: "default" | "outline" }) {
+function Badge({ children, variant = "default", className }: { children: React.ReactNode, variant?: "default" | "outline", className?: string }) {
     const variants = {
         default: "bg-primary text-primary-foreground",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
     };
     return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]}`}>
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]} ${className || ""}`}>
             {children}
         </span>
     );

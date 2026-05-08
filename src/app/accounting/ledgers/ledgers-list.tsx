@@ -44,6 +44,8 @@ function LedgerItem({ ledger }: { ledger: any }) {
     if (ledger.isTaxOutput) flags.push("Tax Out");
     if (ledger.isTaxInput) flags.push("Tax In");
 
+    const phone = ledger.clients?.[0]?.phone || ledger.vendors?.[0]?.phone;
+
     return (
         <div className="flex items-center gap-3 px-4 py-3 bg-card hover:bg-muted/50 rounded-lg border shadow-sm transition-colors group">
             <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
@@ -53,6 +55,7 @@ function LedgerItem({ ledger }: { ledger: any }) {
                 <div className="flex items-center gap-2">
                     <span className="font-medium text-sm truncate">{ledger.name}</span>
                     <span className="text-xs text-muted-foreground">{ledger.code}</span>
+                    {phone && <span className="text-[10px] text-muted-foreground bg-muted px-1 rounded">{phone}</span>}
                 </div>
                 {flags.length > 0 && (
                     <div className="flex gap-1 mt-0.5">
@@ -83,9 +86,14 @@ export function LedgersList({ ledgers }: { ledgers: any[] }) {
     const filteredLedgers = ledgers.filter((l) => {
         if (search) {
             const term = search.toLowerCase();
+            const hasPhoneMatch = 
+                (l.clients?.some((c: any) => c.phone && c.phone.includes(term))) ||
+                (l.vendors?.some((v: any) => v.phone && v.phone.includes(term)));
+
             return (
                 (l.name && l.name.toLowerCase().includes(term)) ||
-                (l.code && l.code.toLowerCase().includes(term))
+                (l.code && l.code.toLowerCase().includes(term)) ||
+                hasPhoneMatch
             );
         }
         return true;
@@ -105,7 +113,7 @@ export function LedgersList({ ledgers }: { ledgers: any[] }) {
             <div className="flex items-center relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="Search ledgers by name or code..."
+                    placeholder="Search by name, code or mobile number..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 max-w-md"

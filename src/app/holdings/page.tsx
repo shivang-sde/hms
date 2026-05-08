@@ -9,7 +9,10 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function HoldingsPage() {
-    const holdings = await apiFetch<any[]>("/api/holdings", { revalidate: 60 });
+    const [holdings, vendors] = await Promise.all([
+        apiFetch<any[]>("/api/holdings", { revalidate: 60 }),
+        apiFetch<any[]>("/api/accounting/vendors?all=true")
+    ]);
 
     return (
         <div className="space-y-6">
@@ -24,7 +27,7 @@ export default async function HoldingsPage() {
                     </Link>
                 </Button>
             </PageHeader>
-            <HoldingsList holdings={holdings} />
+            <HoldingsList holdings={holdings} vendors={vendors} />
         </div>
     );
 }

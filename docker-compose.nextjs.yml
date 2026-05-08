@@ -40,6 +40,8 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NODE_ENV: ${NODE_ENV}
+      SESSION_INACTIVITY_TIMEOUT: ${SESSION_INACTIVITY_TIMEOUT}
+      SESSION_CHECK_INTERVAL: ${SESSION_CHECK_INTERVAL}
     depends_on:
       hms-db:
         condition: service_healthy

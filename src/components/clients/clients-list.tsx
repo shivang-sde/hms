@@ -2,6 +2,7 @@
 
 import { FilterableDataTable } from "@/components/shared/filterable-data-table";
 import { ClientListColumns } from "@/components/clients/columns";
+import { ExportButton } from "@/components/shared/export-button";
 
 const CLIENT_STATUS_OPTIONS = [
     { value: "ALL", label: "All Statuses" },
@@ -35,6 +36,21 @@ export function ClientsListClient({ clients }: ClientsListClientProps) {
                     accessor: (row: any) => row.isActive ? "ACTIVE" : "INACTIVE",
                 },
             ]}
+            renderActions={(filteredData) => (
+                <ExportButton
+                    title="Clients List"
+                    data={filteredData}
+                    columns={[
+                        { header: "Name", key: "name" },
+                        { header: "Contact Person", key: "contactPerson" },
+                        { header: "Phone", key: "phone" },
+                        { header: "City", key: "city.name" },
+                        { header: "GSTIN", key: "gstNumber" },
+                        { header: "PAN", key: "panNumber" },
+                        { header: "Status", key: "isActive" },
+                    ]}
+                />
+            )}
         />
     );
 }
