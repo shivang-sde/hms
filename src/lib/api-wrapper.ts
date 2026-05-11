@@ -21,7 +21,7 @@ function getStatusCode(error: any): number {
 export function withErrorHandling(handler: Handler, options: { allowedRoles?: UserRole[] } = {}) {
   return async (req: NextRequest, ...args: any[]) => {
     const requestId = crypto.randomUUID();
-    
+
     try {
       const session = await auth();
       if (!session) {
@@ -29,20 +29,21 @@ export function withErrorHandling(handler: Handler, options: { allowedRoles?: Us
       }
 
       if (options.allowedRoles && !options.allowedRoles.includes(session.user.role)) {
-        logger.warn("Forbidden API access attempt", { 
-          userId: session.user.id, 
-          role: session.user.role, 
-          path: req.nextUrl.pathname 
+        logger.warn("Forbidden API access attempt", {
+          userId: session.user.id,
+          role: session.user.role,
+          path: req.nextUrl.pathname
         });
         return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
       }
 
+      (req as any).session = session;
       const response = await handler(req, ...args);
       return response;
     } catch (error: any) {
       const statusCode = getStatusCode(error);
       const friendlyMessage = getFriendlyMessage(error);
-      
+
       logger.error("API Error", {
         requestId,
         path: req.nextUrl.pathname,

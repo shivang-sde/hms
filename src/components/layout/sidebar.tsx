@@ -73,6 +73,14 @@ export function SidebarContent({ className, onLinkClick }: { className?: string;
     const [settingsOpen, setSettingsOpen] = useState(isGeneralSettingsActive);
     const [reportsOpen, setReportsOpen] = useState(isReportsActive);
 
+
+    const isRouteActive = (href: string) => {
+        if (href === "/master-data") {
+            return pathname === "/master-data"; // exact only
+        }
+        return pathname === href || pathname.startsWith(href + "/");
+    };
+
     return (
         <div className={cn("flex flex-col h-full", className)}>
             <div className="flex h-16 items-center px-6 border-b border-border/50">
@@ -89,10 +97,7 @@ export function SidebarContent({ className, onLinkClick }: { className?: string;
             <div className="flex-1 overflow-y-auto px-3 py-4 scrollbar-hide">
                 <div className="space-y-1">
                     {filteredNavigation.map((item) => {
-                        const isActive =
-                            item.href === "/"
-                                ? pathname === "/"
-                                : pathname === item.href || pathname.startsWith(item.href + "/");
+                        const isActive = isRouteActive(item.href);
 
                         return (
                             <Link
@@ -153,9 +158,7 @@ export function SidebarContent({ className, onLinkClick }: { className?: string;
                                 <div className="ml-3 pl-3 border-l border-border/50 space-y-0.5 mt-1">
                                     {filteredReportsSubmenus.map((item) => {
                                         const isActive =
-                                            item.href === "/"
-                                                ? pathname === "/"
-                                                : pathname === item.href || pathname.startsWith(item.href + "/");
+                                            isRouteActive(item.href);
 
                                         return (
                                             <Link
@@ -220,9 +223,7 @@ export function SidebarContent({ className, onLinkClick }: { className?: string;
                                 <div className="ml-3 pl-3 border-l border-border/50 space-y-0.5 mt-1">
                                     {filteredSettingsSubmenus.map((item) => {
                                         const isActive =
-                                            item.href === "/"
-                                                ? pathname === "/"
-                                                : pathname === item.href || pathname.startsWith(item.href + "/");
+                                            isRouteActive(item.href);
 
                                         return (
                                             <Link

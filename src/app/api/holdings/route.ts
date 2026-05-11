@@ -48,7 +48,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     const parsed = holdingSchema.parse(body);
     const suggestionId = body.suggestionId as string | undefined;
 
-    const session = await (request as any).session; // withErrorHandling provides this
+    const session = (request as any).session; // withErrorHandling provides this
 
     const { images, ...rest } = parsed;
     const derivedStatus = parsed.status === "AVAILABLE" ? "AVAILABLE" : "UNINSTALLED";
