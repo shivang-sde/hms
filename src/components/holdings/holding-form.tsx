@@ -35,7 +35,7 @@ interface HoldingFormProps {
     cities: City[];
     types: HoldingType[];
     hsnCodes: HsnCode[];
-    vendors?: Array<{ id: string; name: string; phone?: string | null }>;
+    vendors?: Array<{ id: string; name: string; phone?: string | null; vendorType: "LANDLORD" | "AGENCY" }>;
 }
 
 /**
@@ -143,6 +143,39 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
             console.error(error);
         }
     };
+
+    const watchedAssetType = form.watch("assetType");
+
+    const filteredVendors = useMemo(() => {
+        if (!watchedAssetType) return [];
+
+        // If Owned, show only LANDLORDs
+        // If Rented, show only AGENCYs
+        const targetType = watchedAssetType === "OWNED" ? "LANDLORD" : "AGENCY";
+
+        return vendors.filter(v => v.vendorType === targetType);
+    }, [vendors, watchedAssetType]);
+
+    // 2. Effect: Reset Vendor ID if it's not in the new filtered list
+    useEffect(() => {
+        const currentVendorId = form.getValues("vendorId");
+
+        // If there is a selected vendor, check if it exists in the new filtered list
+        if (currentVendorId) {
+            const isValid = filteredVendors.some(v => v.id === currentVendorId);
+
+            // If the current vendor is not valid for the new Asset Type, reset it
+            if (!isValid) {
+                // Option A: Clear it
+                form.setValue("vendorId", "");
+
+                // Option B: Auto-select the first available one (optional)
+                // if (filteredVendors.length > 0) {
+                //     form.setValue("vendorId", filteredVendors[0].id);
+                // }
+            }
+        }
+    }, [filteredVendors, form]);
 
     const watchedCityId = form.watch("cityId");
     const watchedHoldingTypeId = form.watch("holdingTypeId");
@@ -397,7 +430,6 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
                                 <FormLabel>Asset Type</FormLabel>
                                 <Select onValueChange={(value) => {
                                     field.onChange(value);
-                                    if (value === "OWNED") form.setValue("vendorId", undefined);
                                 }} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
@@ -421,8 +453,8 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
                             <FormItem>
                                 <FormLabel>Vendor</FormLabel>
                                 <Select
-                                    onValueChange={(value) => field.onChange(value === "none" ? undefined : value)}
-                                    defaultValue={field.value || "none"}
+                                    onValueChange={(value) => field.onChange(value)}
+                                    defaultValue={field.value}
                                 >
                                     <FormControl>
                                         <SelectTrigger>
@@ -430,8 +462,7 @@ export function HoldingForm({ initialData, cities, types, hsnCodes, vendors = []
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="none">No vendor</SelectItem>
-                                        {vendors.map((vendor) => (
+                                        {filteredVendors.map((vendor) => (
                                             <SelectItem key={vendor.id} value={vendor.id}>
                                                 {vendor.name}
                                             </SelectItem>

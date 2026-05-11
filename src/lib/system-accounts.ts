@@ -26,49 +26,49 @@ interface SystemAccountConfig {
 
 const SYSTEM_ACCOUNT_CONFIG: Record<SystemAccountType, SystemAccountConfig> = {
     SALES: {
-        name: "Sales Account",
+        name: "Sales",
         code: "SYS-SALES",
         type: "INCOME",
         isRevenue: true,
         naturalBalance: "credit",
     },
     CASH: {
-        name: "Cash in Hand",
+        name: "Cash",
         code: "SYS-CASH",
         type: "ASSET",
         isCash: true,
         naturalBalance: "debit",
     },
     BANK: {
-        name: "Bank Account",
+        name: "Bank",
         code: "SYS-BANK",
         type: "ASSET",
         isBank: true,
         naturalBalance: "debit",
     },
     CGST: {
-        name: "CGST Account",
+        name: "CGST",
         code: "SYS-CGST",
         type: "LIABILITY",
         isTaxOutput: true,
         naturalBalance: "credit",
     },
     SGST: {
-        name: "SGST Account",
+        name: "SGST",
         code: "SYS-SGST",
         type: "LIABILITY",
         isTaxOutput: true,
         naturalBalance: "credit",
     },
     IGST: {
-        name: "IGST Account",
+        name: "IGST",
         code: "SYS-IGST",
         type: "LIABILITY",
         isTaxOutput: true,
         naturalBalance: "credit",
     },
     CAPITAL: {
-        name: "Owner's Capital Account",
+        name: "Capital",
         code: "SYS-CAPITAL",
         type: "EQUITY",
         naturalBalance: "credit",
@@ -92,7 +92,10 @@ export class SystemAccountManager {
 
         let accounts = await tx.ledger.findMany({
             where: whereClause,
-            orderBy: { createdAt: 'asc' }
+            orderBy: [
+                { isActive: 'desc' },
+                { createdAt: 'asc' }
+            ]
         });
 
         // Exactly one exists → return it
@@ -100,17 +103,19 @@ export class SystemAccountManager {
             return accounts[0];
         }
 
-        // Multiple exist → cleanup (keep oldest, deactivate others)
+        // Multiple exist → cleanup (keep oldest active, deactivate others)
         if (accounts.length > 1) {
             logger.warn(`Multiple (${accounts.length}) system accounts found for ${accountType}. Cleaning up...`);
 
             const [primary, ...duplicates] = accounts;
             for (const dup of duplicates) {
-                await tx.ledger.update({
-                    where: { id: dup.id },
-                    data: { isActive: false }
-                });
-                logger.warn(`Deactivated duplicate system account: ${dup.name} (${dup.id})`);
+                if (dup.isActive) {
+                    await tx.ledger.update({
+                        where: { id: dup.id },
+                        data: { isActive: false }
+                    });
+                    logger.warn(`Deactivated duplicate system account: ${dup.name} (${dup.id})`);
+                }
             }
             return primary;
         }
@@ -144,14 +149,17 @@ export class SystemAccountManager {
         if (config.isTaxOutput) {
             // Match by name for GST accounts (CGST, SGST, IGST)
             return {
-                name: config.name,
+                name: { equals: config.name, mode: 'insensitive' },
                 isTaxOutput: true,
                 isGroup: false
             };
         }
+        if (config.type === "EQUITY") {
+            return { type: "EQUITY", isSystemLedger: true, isGroup: false };
+        }
 
         // Fallback to name
-        return { name: config.name, isSystemLedger: true };
+        return { name: { equals: config.name, mode: 'insensitive' }, isSystemLedger: true };
     }
 
     private static async createAccount(

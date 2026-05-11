@@ -15,7 +15,7 @@ export default async function VendorsPage() {
         redirect("/login");
     }
 
-    const vendors = await apiFetch<any[]>("/api/accounting/vendors");
+    const vendors = await apiFetch<any[]>(`/api/accounting/vendors?all=true`);
 
     return (
         <div className="space-y-6">
@@ -23,12 +23,14 @@ export default async function VendorsPage() {
                 title="Vendors"
                 description="Manage vendors for outgoing payments"
             >
-                <Link href="/master-data/vendors/new">
-                    <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Vendor
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Link href="/master-data/vendors/new">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Vendor
+                        </Button>
+                    </Link>
+                </div>
             </PageHeader>
 
             <div className="bg-card rounded-xl border shadow-sm">

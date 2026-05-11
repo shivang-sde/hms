@@ -113,10 +113,13 @@ interface InvoiceFormProps {
     };
 }
 
-function monthsInclusive(start: Date, end: Date): number {
+function daysInclusive(start: Date, end: Date): number {
     const s = new Date(start);
+    s.setHours(0, 0, 0, 0);
     const e = new Date(end);
-    return Math.max(1, (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()) + 1);
+    e.setHours(23, 59, 59, 999);
+    const diffTime = e.getTime() - s.getTime();
+    return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 }
 
 function lineDescription(type: LineType, holdingCode: string): string {
@@ -234,14 +237,13 @@ export function InvoiceForm({ initialData, clients, bookings, existingInvoices, 
     );
 
     const { isIntraState, isInterState } = useMemo(() => {
-        const firstBooking = filteredBookings.find((b) => watchedSelectedIds?.includes(b.id));
         const client = clients.find(c => c.id === watchedClientId);
         const clientState = client?.city?.state;
-        const holdingState = firstBooking?.holding?.city?.state;
-        const inter = !!(clientState && holdingState && clientState.toLowerCase() !== holdingState.toLowerCase());
+        
+        const inter = !!(companyState && clientState && companyState.trim().toLowerCase() !== clientState.trim().toLowerCase());
         const intra = !inter;
         return { isIntraState: intra, isInterState: inter };
-    }, [filteredBookings, watchedSelectedIds, clients, watchedClientId]);
+    }, [watchedClientId, clients, companyState]);
 
     useEffect(() => {
         const ids = watchedSelectedIds;
@@ -260,13 +262,17 @@ export function InvoiceForm({ initialData, clients, bookings, existingInvoices, 
                 const clientState = client?.city?.state;
 
                 if (!initialData) {
-                    if (companyState && clientState && companyState.toLowerCase() !== clientState.toLowerCase()) {
+                    const client = clients.find(c => c.id === watchedClientId);
+                    const clientState = client?.city?.state;
+                    const totalGst = Number(first.holding.hsnCode?.gstRate ?? 18);
+
+                    if (companyState && clientState && companyState.trim().toLowerCase() !== clientState.trim().toLowerCase()) {
                         // Inter-state: IGST
                         form.setValue("cgstRate", 0);
                         form.setValue("sgstRate", 0);
                         form.setValue("igstRate", totalGst);
                     } else {
-                        // Intra-state: CGST + SGST (default)
+                        // Intra-state: CGST + SGST
                         form.setValue("cgstRate", totalGst / 2);
                         form.setValue("sgstRate", totalGst / 2);
                         form.setValue("igstRate", 0);
@@ -355,22 +361,18 @@ export function InvoiceForm({ initialData, clients, bookings, existingInvoices, 
             toast.error("Select a client and at least one booking first");
             return;
         }
-        const months = monthsInclusive(new Date(b.startDate), new Date(b.endDate));
+        const days = daysInclusive(new Date(b.startDate), new Date(b.endDate));
         const free = b.freeMountings ?? 0;
         const q =
             type === "RENT"
-                ? months
+                ? days
                 : type === "MOUNTING"
                     ? Math.max(0, (b.totalMountings ?? 0) - free)
                     : 1;
         const rate =
             type === "RENT"
-                ? Number(b.monthlyRate)
-                : type === "MOUNTING"
-                    ? 0
-                    : Number(b.monthlyRate) > 0
-                        ? 0
-                        : 0;
+                ? Math.round((Number(b.monthlyRate) / 30) * 100) / 100
+                : 0;
         append({
             lineType: type,
             bookingId: b.id,
@@ -387,11 +389,11 @@ export function InvoiceForm({ initialData, clients, bookings, existingInvoices, 
             selectedBookings[0] ||
             filteredBookings[0];
         if (!b) return;
-        const months = monthsInclusive(new Date(b.startDate), new Date(b.endDate));
+        const days = daysInclusive(new Date(b.startDate), new Date(b.endDate));
         const free = b.freeMountings ?? 0;
         if (type === "RENT") {
-            form.setValue(`items.${index}.quantity`, months);
-            form.setValue(`items.${index}.rate`, Number(b.monthlyRate));
+            form.setValue(`items.${index}.quantity`, days);
+            form.setValue(`items.${index}.rate`, Math.round((Number(b.monthlyRate) / 30) * 100) / 100);
         } else if (type === "MOUNTING") {
             form.setValue(`items.${index}.quantity`, Math.max(0, (b.totalMountings ?? 0) - free));
             form.setValue(`items.${index}.rate`, 0);

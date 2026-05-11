@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 interface EditAdvertisementPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 export default async function EditAdvertisementPage({ params }: EditAdvertisementPageProps) {
@@ -33,7 +33,7 @@ export default async function EditAdvertisementPage({ params }: EditAdvertisemen
 
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-4xl mx-auto">
             <PageHeader
                 title="Edit Advertisement"
                 description="Update campaign details or status."

@@ -27,19 +27,47 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
 
-export default async function JournalEntriesPage() {
+import { JournalFilters } from "./journal-filters";
+
+export default async function JournalEntriesPage({
+    searchParams
+}: {
+    searchParams: Promise<{ fromDate?: string; toDate?: string }>
+}) {
+    const filters = await searchParams;
+    const { fromDate, toDate } = filters;
+
     const session = await auth();
     if (session?.user?.role !== UserRole.ADMIN) {
         redirect("/login");
     }
 
-    const entries = await apiFetch<any[]>("/api/accounting/journal-entries");
+    const params = new URLSearchParams();
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+
+    const entries = await apiFetch<any[]>(`/api/accounting/journal-entries?${params.toString()}`);
 
     return (
         <div className="space-y-6">
             <PageHeader
                 title="Journal Entries"
-                description="View and manage accounting journal entries"
+                description={
+                    fromDate || toDate ? (
+                        <div className="flex items-center gap-1">
+                            Showing entries from{" "}
+                            <span className="font-medium text-foreground">
+                                {fromDate ? format(new Date(fromDate), "dd MMM yyyy") : "Start"}
+                            </span>
+                            {" "}to{" "}
+                            <span className="font-medium text-foreground">
+                                {toDate ? format(new Date(toDate), "dd MMM yyyy") : "Present"}
+                            </span>
+                        </div>
+                    ) : (
+                        "View and manage accounting journal entries"
+                    )
+                }
             >
                 <div className="flex items-center gap-2">
                     <JournalExport entries={entries} />
@@ -51,6 +79,8 @@ export default async function JournalEntriesPage() {
                     </Link>
                 </div>
             </PageHeader>
+
+            <JournalFilters />
 
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">

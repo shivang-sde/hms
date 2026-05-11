@@ -47,7 +47,18 @@ export const getTaskListColumns = (role?: string) => [
     },
     {
         header: "Due Date",
-        cell: (row: any) => formatDate(row.scheduledDate),
+        cell: (row: any) => {
+            const dueDate = new Date(row.scheduledDate);
+            const isOverdue = dueDate < new Date() && row.status !== "COMPLETED" && row.status !== "CANCELLED";
+            return (
+                <div className="flex items-center gap-2">
+                    <span className={isOverdue ? "text-red-600 font-medium" : ""}>
+                        {formatDate(row.scheduledDate)}
+                    </span>
+                    {isOverdue && <span className="text-[10px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-sm">OVERDUE</span>}
+                </div>
+            );
+        },
     },
     {
         header: "Assigned To",

@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 interface EditBookingPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default async function EditBookingPage({ params }: EditBookingPageProps) {
@@ -38,7 +38,7 @@ export default async function EditBookingPage({ params }: EditBookingPageProps) 
     );
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-4xl mx-auto">
             <PageHeader
                 title="Edit Booking"
                 description="Update campaign dates or rates."

@@ -8,5 +8,4 @@
 ALTER TYPE "HoldingStatus" ADD VALUE 'UNINSTALLED';
 
 -- AlterTable
-ALTER TABLE "holdings" DROP COLUMN "isInstalled",
-ALTER COLUMN "status" SET DEFAULT 'UNINSTALLED';
+ALTER TABLE "holdings" DROP COLUMN "isInstalled";

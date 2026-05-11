@@ -4,6 +4,7 @@ import { TrialBalanceExport } from "./trial-balance-client";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { UserRole } from "@prisma/client";
+import { format } from "date-fns";
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -16,13 +17,26 @@ const typeColors: Record<string, string> = {
     EQUITY: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
 };
 
-export default async function TrialBalancePage() {
+import { TrialBalanceFilters } from './trial-balance-filters'
+
+export default async function TrialBalancePage({
+    searchParams
+}: {
+    searchParams: Promise<{ fromDate?: string; toDate?: string }>
+}) {
+    const filters = await searchParams;
+    const { fromDate, toDate } = filters;
+
     const session = await auth();
     if (session?.user?.role !== UserRole.ADMIN) {
         redirect("/login");
     }
 
-    const data = await apiFetch<any>("/api/accounting/reports/trial-balance");
+    const params = new URLSearchParams();
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+
+    const data = await apiFetch<any>(`/api/accounting/reports/trial-balance?${params.toString()}`);
 
     return (
         <div className="space-y-6">
@@ -30,11 +44,26 @@ export default async function TrialBalancePage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Trial Balance</h1>
                     <p className="text-muted-foreground">
-                        Summary of all ledger balances — debits should equal credits
+                        {fromDate || toDate ? (
+                            <>
+                                Showing balances from{" "}
+                                <span className="font-medium text-foreground">
+                                    {fromDate ? format(new Date(fromDate), "dd MMM yyyy") : "Start"}
+                                </span>
+                                {" "}to{" "}
+                                <span className="font-medium text-foreground">
+                                    {toDate ? format(new Date(toDate), "dd MMM yyyy") : "Present"}
+                                </span>
+                            </>
+                        ) : (
+                            "Summary of all ledger balances — debits should equal credits"
+                        )}
                     </p>
                 </div>
                 <TrialBalanceExport data={data} />
             </div>
+
+            <TrialBalanceFilters />
 
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
                 <div className={`px-4 py-3 border-b flex items-center justify-between ${data.totals.balanced ? "bg-green-50 dark:bg-green-900/10" : "bg-red-50 dark:bg-red-900/10"}`}>

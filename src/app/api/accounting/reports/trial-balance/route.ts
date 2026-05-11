@@ -17,10 +17,17 @@ interface TrialBalanceRow {
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
+        const fromDate = searchParams.get("fromDate");
+        const toDate = searchParams.get("toDate");
         const asOfDate = searchParams.get("asOfDate");
 
         const dateFilter: any = { status: "POSTED" };
-        if (asOfDate) {
+        
+        if (fromDate || toDate) {
+            dateFilter.entryDate = {};
+            if (fromDate) dateFilter.entryDate.gte = new Date(fromDate);
+            if (toDate) dateFilter.entryDate.lte = new Date(toDate);
+        } else if (asOfDate) {
             dateFilter.entryDate = { lte: new Date(asOfDate) };
         }
 

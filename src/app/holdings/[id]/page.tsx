@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { auth } from "@/auth";
 import { PhotoGallery } from "@/components/shared/photo-gallery";
+import { InspectionHistory } from "@/components/holdings/inspection-history";
 
 interface HoldingDetailsPageProps {
     params: {
@@ -205,6 +206,11 @@ export default async function HoldingDetailsPage({ params }: HoldingDetailsPageP
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Inspection History */}
+                <div className="col-span-2">
+                    <InspectionHistory inspections={holding.inspections || []} />
+                </div>
 
                 {/* Vendor Details */}
                 {role === "ADMIN" && holding.vendor && (

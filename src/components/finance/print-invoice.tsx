@@ -272,7 +272,7 @@ export function PrintInvoice({ invoiceId }: PrintInvoiceProps) {
           .invoice-paper {
             width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 10mm;
             box-shadow: none;
           }
 
@@ -288,7 +288,8 @@ export function PrintInvoice({ invoiceId }: PrintInvoiceProps) {
           .invoice-summary-box,
           .invoice-meta-grid,
           .invoice-party-grid,
-          .invoice-bottom-grid {
+          .invoice-bottom-grid,
+          .invoice-header {
             break-inside: avoid;
             page-break-inside: avoid;
           }
@@ -310,15 +311,17 @@ export function PrintInvoice({ invoiceId }: PrintInvoiceProps) {
 
       <div className="invoice-print-shell">
         <div className="invoice-paper">
-          <header
+          <div
+            className="invoice-header"
             style={{
-              display: "grid",
-              gridTemplateColumns: settings.logoUrl ? "1fr auto" : "1fr",
+              display: "flex",
+              justifyContent: "space-between",
               alignItems: "start",
               gap: "12px",
               borderBottom: "2px solid var(--invoice-border)",
               paddingBottom: "10px",
               marginBottom: "12px",
+              width: "100%",
             }}
           >
             <div>
@@ -355,7 +358,7 @@ export function PrintInvoice({ invoiceId }: PrintInvoiceProps) {
                 style={{ maxWidth: "48mm", maxHeight: "18mm", objectFit: "contain" }}
               />
             )}
-          </header>
+          </div>
 
           <div
             style={{

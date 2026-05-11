@@ -65,6 +65,7 @@ model Holding {
   landmark           String?
   status             HoldingStatus       @default(UNINSTALLED)
   maintenanceCycle   Int                 @default(90)
+  nextMaintenanceDue DateTime?
   notes              String?
   cityId             String
   holdingTypeId      String
@@ -438,7 +439,7 @@ model Receipt {
 
 model Ledger {
   id              String        @id @default(cuid())
-  name            String        @unique
+  name            String        
   code            String        @unique
   type            LedgerType
   isGroup         Boolean       @default(false)

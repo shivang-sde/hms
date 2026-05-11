@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2, Power, PowerOff } from "lucide-react";
 import { useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ const vendorColumns = [
         header: "Phone",
     },
     {
-        header: "Type",
+        header: "Vendor Type",
         cell: (row: any) => (
             <Badge variant="outline" className="font-mono text-[10px] uppercase">
                 {row.vendorType || "LANDLORD"}
@@ -35,11 +35,7 @@ const vendorColumns = [
     },
     {
         header: "Status",
-        cell: (row: any) => (
-            <Badge variant={row.isActive ? "default" : "secondary"}>
-                {row.isActive ? "Active" : "Inactive"}
-            </Badge>
-        ),
+        cell: (row: any) => <VendorStatusBadge vendor={row} />,
     },
     {
         accessorKey: "id",
@@ -49,10 +45,42 @@ const vendorColumns = [
     },
 ];
 
+function VendorStatusBadge({ vendor }: { vendor: any }) {
+    const router = useRouter();
+    const [isPending, setIsPending] = useState(false);
+
+    const toggleStatus = async () => {
+        setIsPending(true);
+        try {
+            await apiFetch(`/api/accounting/vendors/${vendor.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ isActive: !vendor.isActive })
+            });
+            toast.success(`Vendor marked as ${!vendor.isActive ? 'active' : 'inactive'}`);
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update status");
+        } finally {
+            setIsPending(false);
+        }
+    };
+
+    return (
+        <Badge 
+            variant={vendor.isActive ? "default" : "secondary"}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={toggleStatus}
+        >
+            {isPending ? "..." : (vendor.isActive ? "Active" : "Inactive")}
+        </Badge>
+    );
+}
+
 function VendorActions({ vendor }: { vendor: any }) {
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isToggling, setIsToggling] = useState(false);
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -68,8 +96,34 @@ function VendorActions({ vendor }: { vendor: any }) {
         }
     };
 
+    const handleToggleStatus = async () => {
+        setIsToggling(true);
+        try {
+            await apiFetch(`/api/accounting/vendors/${vendor.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ isActive: !vendor.isActive })
+            });
+            toast.success(`Vendor ${!vendor.isActive ? 'activated' : 'deactivated'} successfully`);
+            router.refresh();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to toggle status");
+        } finally {
+            setIsToggling(false);
+        }
+    };
+
     return (
         <div className="flex items-center justify-end gap-2">
+            <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleToggleStatus}
+                disabled={isToggling}
+                title={vendor.isActive ? "Deactivate Vendor" : "Activate Vendor"}
+                className={vendor.isActive ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"}
+            >
+                {vendor.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+            </Button>
             <Link href={`/master-data/vendors/${vendor.id}`}>
                 <Button size="sm" variant="ghost">
                     <Eye className="h-4 w-4" />
@@ -80,9 +134,9 @@ function VendorActions({ vendor }: { vendor: any }) {
                     <Pencil className="h-4 w-4" />
                 </Button>
             </Link>
-            <Button 
-                size="sm" 
-                variant="ghost" 
+            <Button
+                size="sm"
+                variant="ghost"
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                 onClick={() => setShowDeleteDialog(true)}
             >

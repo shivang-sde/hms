@@ -36,6 +36,8 @@ export function HoldingsList({ holdings, vendors = [] }: HoldingsListProps) {
                 { path: "holdingType.name" },
                 { path: "city.name" },
                 { path: "vendor.name" },
+                { path: "assetType" },
+                { path: "vendor.vendorType" }
             ]}
             filters={[
                 {

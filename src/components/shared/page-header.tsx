@@ -3,7 +3,7 @@ import { type LucideIcon, Plus } from "lucide-react";
 
 interface PageHeaderProps {
     title: string;
-    description: string;
+    description: React.ReactNode;
     icon?: LucideIcon;
     actionLabel?: string;
     actionHref?: string;
@@ -29,7 +29,7 @@ export function PageHeader({
                 )}
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                    <div className="text-sm text-muted-foreground">{description}</div>
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">

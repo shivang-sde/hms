@@ -48,7 +48,7 @@ export const holdingSchema = z.object({
     landmark: z.string().optional(),
     status: z.enum(["UNINSTALLED", "AVAILABLE", "BOOKED", "UNDER_MAINTENANCE", "INACTIVE"]).default("UNINSTALLED"),
     assetType: z.enum(["OWNED", "RENTED"]).default("OWNED"),
-    vendorId: z.string().optional().nullable(),
+    vendorId: z.string().min(1, "Vendor is required"),
     maintenanceCycle: z.coerce.number().int().positive().default(90),
     notes: z.string().optional(),
     images: z.array(z.any()).min(1, "At least one image is required"),

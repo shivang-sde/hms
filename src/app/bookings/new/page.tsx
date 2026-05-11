@@ -21,7 +21,7 @@ export default async function NewBookingPage() {
         apiFetch<any[]>("/api/holdings"),
     ]);
 
-    const availableHoldings = holdings.filter((holding: any) => holding.status === "AVAILABLE" && holding.isInstalled === true);
+    const availableHoldings = holdings.filter((holding: any) => holding.status === "AVAILABLE");
 
 
     return (

@@ -212,7 +212,7 @@ export function PrintReceipt({ receiptId }: PrintReceiptProps) {
           .receipt-paper {
             width: 100%;
             margin: 0;
-            padding: 0;
+            padding: 10mm;
             box-shadow: none;
           }
 
@@ -223,7 +223,8 @@ export function PrintReceipt({ receiptId }: PrintReceiptProps) {
           .receipt-meta-grid,
           .receipt-party-grid,
           .receipt-bottom-grid,
-          .receipt-summary-box {
+          .receipt-summary-box,
+          .receipt-header {
             break-inside: avoid;
             page-break-inside: avoid;
           }
@@ -245,15 +246,17 @@ export function PrintReceipt({ receiptId }: PrintReceiptProps) {
 
       <div className="receipt-print-shell">
         <div className="receipt-paper">
-          <header
+          <div
+            className="receipt-header"
             style={{
-              display: "grid",
-              gridTemplateColumns: settings.logoUrl ? "1fr auto" : "1fr",
+              display: "flex",
+              justifyContent: "space-between",
               alignItems: "start",
               gap: "12px",
               borderBottom: "2px solid var(--receipt-border)",
               paddingBottom: "10px",
               marginBottom: "12px",
+              width: "100%",
             }}
           >
             <div>
@@ -290,7 +293,7 @@ export function PrintReceipt({ receiptId }: PrintReceiptProps) {
                 style={{ maxWidth: "48mm", maxHeight: "18mm", objectFit: "contain" }}
               />
             )}
-          </header>
+          </div>
 
           <div
             style={{

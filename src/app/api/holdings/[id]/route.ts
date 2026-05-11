@@ -39,7 +39,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
                     take: 5,
                 },
                 maintenanceRecords: { orderBy: { performedDate: "desc" }, take: 5 },
-                holdingPhotos: true,
+                holdingPhotos: {
+                    orderBy: { createdAt: "desc" },
+                    take: 3,
+                },
             } as any,
         });
         if (!holding) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -74,7 +77,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 where: { id },
                 data: {
                     ...rest,
-                    vendorId: parsed.assetType === "RENTED" ? parsed.vendorId ?? null : null,
                 },
             });
 

@@ -105,6 +105,34 @@ export async function PUT(
     }
 }
 
+export async function PATCH(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+) {
+    try {
+        const session = await auth();
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = await params;
+        const body = await request.json();
+
+        // Allow partial updates, specifically for isActive
+        const vendor = await prisma.vendor.update({
+            where: { id },
+            data: {
+                ...(body.isActive !== undefined && { isActive: body.isActive }),
+            },
+        });
+
+        return NextResponse.json(vendor);
+    } catch (error: any) {
+        console.error("[PATCH /api/accounting/vendors/[id]]", error);
+        return NextResponse.json({ error: "Failed to update vendor status" }, { status: 500 });
+    }
+}
+
 export async function DELETE(
     _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },

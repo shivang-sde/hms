@@ -22,6 +22,8 @@ export default async function HoldingsPage() {
         apiFetch<any[]>("/api/accounting/vendors?all=true")
     ]);
 
+    console.log("holdings", holdings);
+
     return (
         <div className="space-y-6">
             <PageHeader

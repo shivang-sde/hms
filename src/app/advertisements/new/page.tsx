@@ -18,17 +18,17 @@ export default async function NewAdvertisementPage() {
 
     const bookings = await apiFetch<any[]>("/api/bookings");
 
-    const confirmedBookings = bookings.filter((booking: any) => booking.status === "CONFIRMED");
+    const confirmedAndActiveBookings = bookings.filter((booking: any) => booking.status === "CONFIRMED" || booking.status === "ACTIVE");
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-5xl mx-auto">
             <PageHeader
                 title="Create Advertisement"
                 description="Link artwork and creative details to a booking."
                 icon={PlusCircle}
             />
             <div className="bg-card rounded-xl border border-border/50 p-6 shadow-sm">
-                <AdvertisementForm bookings={confirmedBookings} />
+                <AdvertisementForm bookings={confirmedAndActiveBookings} />
             </div>
         </div>
     );

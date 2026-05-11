@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 
 interface EditClientPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 export default async function EditClientPage({ params }: EditClientPageProps) {
@@ -31,7 +31,7 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
     }
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-4xl mx-auto">
             <PageHeader
                 title="Edit Client"
                 description="Update client contact or business details."

@@ -137,6 +137,36 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                     }
                 }
 
+                // If this is a MAINTENANCE task, update holding and create record
+                if (task.taskType === "MAINTENANCE" && task.holdingId) {
+                    const holding = await tx.holding.findUnique({ where: { id: task.holdingId } });
+                    if (holding) {
+                        const cycleDays = holding.maintenanceCycle || 90;
+                        const nextDueDate = new Date();
+                        nextDueDate.setDate(nextDueDate.getDate() + cycleDays);
+
+                        await tx.holding.update({
+                            where: { id: task.holdingId },
+                            data: {
+                                nextMaintenanceDue: nextDueDate,
+                                status: holding.status === "UNDER_MAINTENANCE" ? "AVAILABLE" : holding.status,
+                            }
+                        });
+
+                        await (tx as any).maintenanceRecord.create({
+                            data: {
+                                holdingId: task.holdingId,
+                                maintenanceType: "OTHER",
+                                description: latestExecution?.remarks || "Scheduled maintenance completed.",
+                                cost: 0,
+                                performedDate: latestExecution?.createdAt || new Date(),
+                                performedBy: latestExecution?.performedBy?.name || "System",
+                                status: "COMPLETED",
+                            }
+                        });
+                    }
+                }
+
                 // Save execution images into holding
                 const targetHoldingId = task.holdingId || task.booking?.holdingId || task.advertisement?.booking?.holdingId;
                 if (targetHoldingId && latestExecution) {

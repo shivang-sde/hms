@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { holdingSchema } from "@/lib/validations";
 import { withErrorHandling } from "@/lib/api-wrapper";
-import { UserRole } from "@prisma/client";
+import { HoldingStatus, UserRole } from "@prisma/client";
 
 export const GET = withErrorHandling(async () => {
     const holdings = await prisma.holding.findMany({
@@ -10,7 +10,7 @@ export const GET = withErrorHandling(async () => {
             city: true,
             holdingType: true,
             hsnCode: true,
-            vendor: { select: { id: true, name: true, phone: true } },
+            vendor: { select: { id: true, name: true, phone: true, vendorType: true } },
             inspections: true,
             holdingPhotos: {
                 take: 3,
@@ -51,14 +51,13 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     const session = (request as any).session; // withErrorHandling provides this
 
     const { images, ...rest } = parsed;
-    const derivedStatus = parsed.status === "AVAILABLE" ? "AVAILABLE" : "UNINSTALLED";
+    const derivedStatus: any = parsed.status === "AVAILABLE" ? "AVAILABLE" : "UNINSTALLED";
 
     const holding = await prisma.$transaction(async (tx) => {
         const newHolding = await tx.holding.create({
             data: {
                 ...rest,
-                status: derivedStatus,
-                vendorId: parsed.assetType === "RENTED" ? parsed.vendorId ?? null : null,
+                status: derivedStatus
             },
         });
 

@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const source = searchParams.get("source");
         const status = searchParams.get("status");
-        const from = searchParams.get("from");
-        const to = searchParams.get("to");
+        const from = searchParams.get("fromDate") || searchParams.get("from");
+        const to = searchParams.get("toDate") || searchParams.get("to");
 
         const where: any = {};
         if (source) where.source = source;

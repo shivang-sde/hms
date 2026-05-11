@@ -63,6 +63,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
 
         const booking = await prisma.booking.update({ where: { id }, data: parsed });
+
+        if (parsed.status === "ACTIVE" || parsed.status === "CONFIRMED") {
+            await prisma.holding.update({ where: { id: parsed.holdingId }, data: { status: "BOOKED" } });
+
+        } else if (parsed.status === "CANCELLED" || parsed.status === "COMPLETED") {
+            await prisma.holding.update({ where: { id: parsed.holdingId }, data: { status: "AVAILABLE" } });
+            const advertisement = await prisma.advertisement.findFirst({ where: { bookingId: id } });
+            if (advertisement) {
+                await prisma.advertisement.update({ where: { id: advertisement.id }, data: { status: parsed.status === "CANCELLED" ? "REMOVED" : "COMPLETED" } });
+            }
+        }
         return NextResponse.json(booking);
     } catch (error: any) {
         console.error("[PUT /api/bookings/[id]]", error);
