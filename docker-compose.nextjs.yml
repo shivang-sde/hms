@@ -52,6 +52,15 @@ services:
     networks:
       - cas-network
 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hms-router.rule=Host(`hms.radhakrishnajewellery.in`)"
+      - "traefik.http.routers.hms-router.entrypoints=websecure"
+      - "traefik.http.routers.hms-router.tls=true"
+      - "traefik.http.routers.hms-router.tls.certresolver=cert-resolver"
+      - "traefik.http.services.hms-service.loadbalancer.server.port=3000"
+      - "traefik.docker.network=cas-network"
+
     logging:
       driver: "json-file"
       options:
