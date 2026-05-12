@@ -282,7 +282,7 @@ export function InvoiceForm({ initialData, clients, bookings, existingInvoices, 
         } else {
             form.setValue("bookingId", "");
         }
-    }, [watchedSelectedIds, filteredBookings, form, watchedClientId, clients, initialData]);
+    }, [watchedSelectedIds, filteredBookings, form, watchedClientId, clients, initialData, companyState]);
 
     useEffect(() => {
         if (!initialData && !form.getValues("invoiceNumber")) {

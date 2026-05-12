@@ -6,6 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Save, Loader2, Upload } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { INDIAN_STATES } from "@/lib/constants";
 
 export default function SettingsPageClient() {
   const [loading, setLoading] = useState(true);
@@ -33,7 +41,10 @@ export default function SettingsPageClient() {
     website: "",
     phone: "",
     state: "",
+    cityId: "",
   });
+
+  const [cities, setCities] = useState<any[]>([]);
 
   const [termsText, setTermsText] = useState("");
 
@@ -64,16 +75,30 @@ export default function SettingsPageClient() {
             website: data.website || "",
             phone: data.phone || "Call: 82580-05500",
             state: data.state || "Tripura",
+            cityId: data.cityId || "",
           });
           setTermsText((data.terms || []).join("\n"));
         }
       } catch (err) {
         console.error("Failed to fetch settings", err);
-      } finally {
-        setLoading(false);
       }
     }
-    fetchSettings();
+
+    async function fetchCities() {
+      try {
+        const res = await fetch("/api/master-data/cities?all=true");
+        if (res.ok) {
+          const data = await res.json();
+          setCities(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch cities", err);
+      }
+    }
+
+    Promise.all([fetchSettings(), fetchCities()]).finally(() => {
+      setLoading(false);
+    });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -236,8 +261,49 @@ export default function SettingsPageClient() {
           </div>
 
           <div className="grid gap-2">
+            <Label htmlFor="cityId">City (From Master List)</Label>
+            <Select
+              value={formData.cityId}
+              onValueChange={(val) => {
+                const city = cities.find((c) => c.id === val);
+                setFormData((prev) => ({
+                  ...prev,
+                  cityId: val,
+                  state: city?.state || prev.state,
+                }));
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a city" />
+              </SelectTrigger>
+              <SelectContent>
+                {cities.map((city) => (
+                  <SelectItem key={city.id} value={city.id}>
+                    {city.name} ({city.state})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="state">State (Used for GST Logic)</Label>
-            <Input id="state" name="state" value={formData.state} onChange={handleChange} placeholder="e.g. Tripura" />
+            <Select
+              value={formData.state}
+              onValueChange={(val) => setFormData((prev) => ({ ...prev, state: val }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a state" />
+              </SelectTrigger>
+              <SelectContent>
+                {INDIAN_STATES.map((state) => (
+                  <SelectItem key={state} value={state}>
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">State is automatically set if you select a city above, but can be overridden.</p>
           </div>
         </section>
 

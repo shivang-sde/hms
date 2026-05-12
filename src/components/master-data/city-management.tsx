@@ -36,6 +36,14 @@ import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { INDIAN_STATES } from "@/lib/constants";
 
 interface CityManagementProps {
     cities: any[];
@@ -165,9 +173,20 @@ export function CityManagement({ cities }: CityManagementProps) {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>State</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="e.g. Maharashtra" {...field} />
-                                            </FormControl>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a state" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {INDIAN_STATES.map((state) => (
+                                                        <SelectItem key={state} value={state}>
+                                                            {state}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}

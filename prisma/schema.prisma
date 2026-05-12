@@ -18,6 +18,7 @@ model City {
   holdings            Holding[]
   locationSuggestions LocationSuggestion[]
   vendors             Vendor[]
+  companySettings     CompanySettings[]
 
   @@unique([name, state])
   @@map("cities")
@@ -617,6 +618,8 @@ model CompanySettings {
   footerAddress String?
   website       String?
   phone         String?
+  cityId        String?
+  city          City?    @relation(fields: [cityId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

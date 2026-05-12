@@ -205,7 +205,7 @@ export function ClientForm({ initialData, cities }: ClientFormProps) {
                                     <SelectContent>
                                         {cities.map((city) => (
                                             <SelectItem key={city.id} value={city.id}>
-                                                {city.name}
+                                                {city.name} ({city.state})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
