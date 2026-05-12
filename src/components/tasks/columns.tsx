@@ -62,7 +62,21 @@ export const getTaskListColumns = (role?: string) => [
     },
     {
         header: "Assigned To",
-        cell: (row: any) => row.assignedTo?.name || "Unassigned",
+        cell: (row: any) => {
+            const isUnassignedMaintenance = role === "ADMIN" && row.taskType === "MAINTENANCE" && !row.assignedTo;
+            return (
+                <div className="flex flex-col gap-1">
+                    <span className={!row.assignedTo ? "text-muted-foreground italic" : ""}>
+                        {row.assignedTo?.name || "Unassigned"}
+                    </span>
+                    {isUnassignedMaintenance && (
+                        <span className="text-[10px] leading-tight font-medium bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded shadow-sm w-fit">
+                            Needs Assignment (Maintenance)
+                        </span>
+                    )}
+                </div>
+            );
+        },
     },
     {
         header: "Status",

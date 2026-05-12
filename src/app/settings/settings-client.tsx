@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { INDIAN_STATES } from "@/lib/constants";
 
 export default function SettingsPageClient() {
   const [loading, setLoading] = useState(true);
@@ -288,22 +287,15 @@ export default function SettingsPageClient() {
 
           <div className="grid gap-2">
             <Label htmlFor="state">State (Used for GST Logic)</Label>
-            <Select
-              value={formData.state}
-              onValueChange={(val) => setFormData((prev) => ({ ...prev, state: val }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a state" />
-              </SelectTrigger>
-              <SelectContent>
-                {INDIAN_STATES.map((state) => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground">State is automatically set if you select a city above, but can be overridden.</p>
+            <Input 
+              id="state" 
+              name="state" 
+              value={formData.state} 
+              readOnly 
+              className="bg-muted cursor-not-allowed"
+              placeholder="Select a city to set state"
+            />
+            <p className="text-[10px] text-muted-foreground">State is automatically derived from the selected city to ensure GST consistency.</p>
           </div>
         </section>
 
