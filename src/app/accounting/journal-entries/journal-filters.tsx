@@ -32,14 +32,22 @@ export function JournalFilters() {
         }
 
         const params = new URLSearchParams(searchParams.toString());
-        if (fromDate) params.set("fromDate", fromDate.toISOString());
-        else params.delete("fromDate");
-        
-        if (toDate) params.set("toDate", toDate.toISOString());
-        else params.delete("toDate");
+
+        if (fromDate) {
+            params.set("fromDate", format(fromDate, "yyyy-MM-dd"));
+        } else {
+            params.delete("fromDate");
+        }
+
+        if (toDate) {
+            params.set("toDate", format(toDate, "yyyy-MM-dd"));
+        } else {
+            params.delete("toDate");
+        }
 
         router.push(`?${params.toString()}`);
     };
+
 
     const handleClear = () => {
         setFromDate(undefined);

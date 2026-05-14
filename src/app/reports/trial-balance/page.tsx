@@ -33,8 +33,12 @@ export default async function TrialBalancePage({
     }
 
     const params = new URLSearchParams();
-    if (fromDate) params.append("fromDate", fromDate);
-    if (toDate) params.append("toDate", toDate);
+    if (fromDate) {
+        params.append("fromDate", format(fromDate, "yyyy-MM-dd"));
+    }
+    if (toDate) {
+        params.append("toDate", format(toDate, "yyyy-MM-dd"));
+    }
 
     const data = await apiFetch<any>(`/api/accounting/reports/trial-balance?${params.toString()}`);
 
